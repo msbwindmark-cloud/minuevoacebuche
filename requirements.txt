@@ -10,5 +10,8 @@ imapclient
 # google-auth-httplib2
 # google-api-python-client
 
+# Para exportar a Excel (comando exportar_excel)
+openpyxl
+
 # Para variables de entorno .env (opcional)
 # python-dotenv

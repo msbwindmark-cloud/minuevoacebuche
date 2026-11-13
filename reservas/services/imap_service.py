@@ -32,7 +32,7 @@ def _decodificar_cabecera(valor):
                 resultado.append(parte.decode("utf-8", errors="replace"))
         else:
             resultado.append(parte)
-    return "".join(resultato)
+    return "".join(resultado)
 
 
 def conectar_imap():

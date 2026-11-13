@@ -11,6 +11,7 @@ Configurado con GOOGLE_MAPS_API_KEY en .env.
 """
 
 import logging
+import hashlib
 from math import radians, cos, sin, asin, sqrt
 
 from django.conf import settings
@@ -19,6 +20,57 @@ logger = logging.getLogger(__name__)
 
 # Radio de la Tierra en kilómetros
 RADIO_TIERRA_KM = 6371.0
+
+# Centro de Sevilla, para las coordenadas simuladas del modo demo
+_SEVILLA_LAT = 37.3891
+_SEVILLA_LON = -5.9845
+
+# Coordenadas reales aproximadas de los puntos de recogida habituales
+_COORDS_DEMO = {
+    "avenida de roma": (37.3866, -5.9822),
+    "luis montoto": (37.3866, -5.9822),
+    "becquer": (37.3928, -5.9931),
+    "bécquer": (37.3928, -5.9931),
+    "lumbreras": (37.3975, -5.9920),
+    "alameda": (37.3975, -5.9920),
+    "duque": (37.3920, -5.9977),
+    "teniente borges": (37.3920, -5.9977),
+    "corte ingles": (37.3844, -5.9736),
+    "corte inglés": (37.3844, -5.9736),
+    "hotel america": (37.3844, -5.9736),
+    "hotel américa": (37.3844, -5.9736),
+    "santa justa": (37.3927, -5.9743),
+    "macarena": (37.4027, -5.9889),
+    "plaza de toros": (37.3823, -5.9864),
+    "murillo": (37.3833, -5.9873),
+    "nervion": (37.3834, -5.9737),
+    "nervión": (37.3834, -5.9737),
+}
+
+
+def _clave_maps_valida():
+    """True si hay una API key de Google Maps real (no vacía ni de ejemplo)."""
+    api_key = (getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "").strip()
+    if not api_key:
+        return False
+    return not api_key.upper().startswith("API_KEY_")
+
+
+def _geocodificar_demo(direccion):
+    """
+    Geocodificación SIMULADA para el modo demo.
+    Usa coordenadas reales de puntos conocidos de Sevilla o genera una
+    posición estable (determinista) alrededor del centro de la ciudad.
+    """
+    texto = (direccion or "").lower()
+    for clave, coords in _COORDS_DEMO.items():
+        if clave in texto:
+            return coords
+
+    semilla = int(hashlib.md5(texto.encode("utf-8")).hexdigest(), 16)
+    lat = _SEVILLA_LAT + ((semilla % 1000) / 1000 - 0.5) * 0.04
+    lon = _SEVILLA_LON + (((semilla // 1000) % 1000) / 1000 - 0.5) * 0.05
+    return round(lat, 6), round(lon, 6)
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -50,7 +102,11 @@ def geocodificar_direccion(direccion):
     Devuelve (latitud, longitud) o (None, None) si falla o no hay API key.
     """
     api_key = getattr(settings, "GOOGLE_MAPS_API_KEY", "")
-    if not api_key or not direccion:
+    if not _clave_maps_valida():
+        if getattr(settings, "MODO_DEMO", False) and direccion:
+            lat, lon = _geocodificar_demo(direccion)
+            logger.info("Geocodificación SIMULADA (modo demo) para: %s", direccion)
+            return lat, lon
         logger.warning("GOOGLE_MAPS_API_KEY no configurada o dirección vacía.")
         return None, None
 
@@ -96,7 +152,7 @@ def calcular_tiempo_a_pie(origen_lat, origen_lon, destino_lat, destino_lon):
     """
     api_key = getattr(settings, "GOOGLE_MAPS_API_KEY", "")
 
-    if api_key:
+    if _clave_maps_valida():
         try:
             import requests
             url = "https://maps.googleapis.com/maps/api/distancematrix/json"
@@ -147,6 +203,7 @@ def buscar_punto_recogida_mas_cercano(direccion_alojamiento, puntos_recogida, ma
         "cumple_regla": False,
         "alojamiento_lat": None,
         "alojamiento_lon": None,
+        "modo_demo": not _clave_maps_valida(),
     }
 
     if not direccion_alojamiento:

@@ -309,7 +309,9 @@
             if (interp.quiere_transporte !== null) html += "<li>Transporte: " + (interp.quiere_transporte ? "Sí" : "No") + "</li>";
             if (interp.direccion_alojamiento) html += "<li>Alojamiento: " + interp.direccion_alojamiento + "</li>";
             html += "</ul>";
-            html += "<small>Confianza IA: " + (interp.confianza * 100).toFixed(0) + "%</small>";
+            html += "<small>Confianza IA: " + (interp.confianza * 100).toFixed(0) + "%";
+            if (data.modo_demo) html += " · simulación en modo demo";
+            html += "</small>";
             if (data.requiere_revision_manual) {
               html += "<div class='mt-2 alert alert-warning'><strong>⚠ Revisión manual recomendada</strong> - Lucía debe verificar los datos.</div>";
             }

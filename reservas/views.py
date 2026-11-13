@@ -284,6 +284,7 @@ def interpretar_respuesta(request, pk):
         "interpretacion": interpretacion,
         "cambios_aplicados": cambios,
         "requiere_revision_manual": interpretacion.get("requiere_revision_manual", True),
+        "modo_demo": interpretacion.get("modo_demo", False),
     })
 
 
@@ -337,6 +338,7 @@ def buscar_punto_recogida(request, pk):
             "minutos": resultado["minutos"],
             "distancia_km": resultado["distancia_km"],
             "enlace_maps": resultado["punto"].enlace_maps or "",
+            "modo_demo": resultado.get("modo_demo", False),
             "mensaje": f"Punto asignado: {resultado['punto'].nombre} ({resultado['minutos']} min andando).",
         })
     else:
@@ -352,6 +354,7 @@ def buscar_punto_recogida(request, pk):
             "punto_asignado": False,
             "minutos": resultado.get("minutos"),
             "distancia_km": resultado.get("distancia_km"),
+            "modo_demo": resultado.get("modo_demo", False),
             "mensaje": "Ningún punto está a ≤10 min andando. Reserva marcada para decisión de Lucía.",
             "requiere_decision_lucia": True,
         })

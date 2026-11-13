@@ -231,6 +231,6 @@ class Command(BaseCommand):
         wb.save(salida)
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Excel exportado: {salida} ({reservas.count()} reservas del {mes:02d}/{anio})"
+                f"[OK] Excel exportado: {salida} ({reservas.count()} reservas del {mes:02d}/{anio})"
             )
         )

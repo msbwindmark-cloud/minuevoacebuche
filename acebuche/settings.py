@@ -10,6 +10,8 @@ Stack (según especificaciones):
 """
 
 import os
+import sys
+import io
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -207,6 +209,13 @@ GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 IA_API_KEY = os.environ.get("IA_API_KEY", "")
 
 # ---------------------------------------------------------------------------
+# Modo demostración
+# Cuando está activo y no hay credenciales reales, la IA y Google Maps se
+# simulan en local para poder probar la app sin claves de Lucía.
+# ---------------------------------------------------------------------------
+MODO_DEMO = os.environ.get("MODO_DEMO", "1" if DEBUG else "0") == "1"
+
+# ---------------------------------------------------------------------------
 # Auditoría / registro de acciones de la app
 # ---------------------------------------------------------------------------
 AUDIT_LOG_ENABLED = True
@@ -258,6 +267,24 @@ RESPUESTA_CON_TRANSPORTE = os.environ.get(
 )
 
 # ---------------------------------------------------------------------------
-# Avisos urgentes (días de antelación)
+# Logging (consola segura en Windows cp1252)
 # ---------------------------------------------------------------------------
-AVISO_RESERVA_PROXIMA_DIAS = int(os.environ.get("AVISO_RESERVA_PROXIMA_DIAS", "1"))
+_stream = sys.stdout
+if hasattr(_stream, "buffer"):
+    _stream = io.TextIOWrapper(_stream.buffer, encoding="utf-8", errors="replace")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": _stream,
+        },
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO"},
+        "reservas": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "core": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}

@@ -12,10 +12,140 @@ Se configura con IA_API_KEY e IA_PROVEEDOR en .env.
 
 import json
 import logging
+import re
 
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+
+def _clave_ia_valida():
+    """True si hay una clave de IA real (no vacía ni de ejemplo)."""
+    api_key = (getattr(settings, "IA_API_KEY", "") or "").strip()
+    if not api_key:
+        return False
+    return not api_key.upper().startswith("API_KEY_")
+
+
+# Países que reconoce el modo demo (sin IA real)
+_PAISES_DEMO = {
+    "reino unido": "Reino Unido",
+    "united kingdom": "Reino Unido",
+    "inglaterra": "Reino Unido",
+    "england": "Reino Unido",
+    "uk": "Reino Unido",
+    "irlanda": "Irlanda",
+    "ireland": "Irlanda",
+    "alemania": "Alemania",
+    "germany": "Alemania",
+    "francia": "Francia",
+    "france": "Francia",
+    "italia": "Italia",
+    "italy": "Italia",
+    "estados unidos": "Estados Unidos",
+    "united states": "Estados Unidos",
+    "usa": "Estados Unidos",
+    "mexico": "México",
+    "méxico": "México",
+    "espana": "España",
+    "españa": "España",
+    "spain": "España",
+    "holanda": "Países Bajos",
+    "paises bajos": "Países Bajos",
+    "países bajos": "Países Bajos",
+    "netherlands": "Países Bajos",
+    "belgica": "Bélgica",
+    "bélgica": "Bélgica",
+    "belgium": "Bélgica",
+    "suiza": "Suiza",
+    "switzerland": "Suiza",
+    "canada": "Canadá",
+    "canadá": "Canadá",
+    "australia": "Australia",
+    "portugal": "Portugal",
+}
+
+
+def _contiene_palabra(texto, palabra):
+    patron = r"(?<![a-záéíóúñ])" + re.escape(palabra) + r"(?![a-záéíóúñ])"
+    return re.search(patron, texto) is not None
+
+
+def _interpretar_demo(texto, idioma_origen="en"):
+    """
+    Interpretación SIMULADA para el modo demo (sin IA_API_KEY real).
+    Extrae datos con reglas sencillas para poder probar el flujo completo.
+    """
+    texto = texto or ""
+    bajo = texto.lower()
+
+    nacionalidad = ""
+    for clave, valor in _PAISES_DEMO.items():
+        if _contiene_palabra(bajo, clave):
+            nacionalidad = valor
+            break
+
+    telefono = ""
+    m = re.search(r"(\+\d[\d\s\-().]{6,}\d)", texto)
+    if m:
+        telefono = re.sub(r"\s+", " ", m.group(1)).strip()
+
+    edades = []
+    for patron in (
+        r"(\d{1,2})\s*(?:años|years|yrs|yo)\b",
+        r"(?:edad|age)\D{0,8}(\d{1,2})\b",
+        r"\b(?:i'?m|i am|tengo)\s*(\d{1,2})\b",
+    ):
+        for numero in re.findall(patron, texto, re.IGNORECASE):
+            edad = int(numero)
+            if 5 <= edad <= 90 and edad not in edades:
+                edades.append(edad)
+
+    experiencia = ""
+    for linea in texto.splitlines():
+        if any(
+            clave in linea.lower()
+            for clave in ("experiencia", "experience", "montado", "ridden", "riding", "trote", "galope")
+        ):
+            experiencia = linea.strip()[:200]
+            break
+
+    negativos = (
+        "no transport", "no transporte", "don't need transport", "do not need transport",
+        "sin transporte", "no necesitamos", "we don't need", "no thanks", "no thank you",
+    )
+    positivos = (
+        "transport", "transporte", "pickup", "pick up", "pick-up", "recogida", "nos recogen",
+    )
+    quiere_transporte = None
+    if any(p in bajo for p in negativos):
+        quiere_transporte = False
+    elif any(p in bajo for p in positivos):
+        quiere_transporte = True
+
+    direccion = ""
+    m = re.search(
+        r"((?:hotel|hostal|apartamento|apartment|airbnb|calle|avenida|street|address|direcci[oó]n)"
+        r"\s+[^\n\.;]{2,80})",
+        texto,
+        re.IGNORECASE,
+    )
+    if m:
+        direccion = m.group(1).strip()
+
+    return {
+        "nacionalidad": nacionalidad,
+        "edades": edades,
+        "telefono": telefono,
+        "experiencia": experiencia,
+        "quiere_transporte": quiere_transporte,
+        "direccion_alojamiento": direccion,
+        "confianza": 0.75,
+        "texto_original": texto,
+        "idioma_detectado": idioma_origen,
+        "requiere_revision_manual": False,
+        "modo_demo": True,
+    }
 
 
 def interpretar_respuesta_cliente(texto, idioma_origen="en"):
@@ -42,7 +172,11 @@ def interpretar_respuesta_cliente(texto, idioma_origen="en"):
     api_key = getattr(settings, "IA_API_KEY", "")
     proveedor = getattr(settings, "IA_PROVEEDOR", "claude")
 
-    if not api_key:
+    if not _clave_ia_valida():
+        if getattr(settings, "MODO_DEMO", False):
+            logger.info("IA en MODO DEMO: interpretación simulada sin IA_API_KEY real.")
+            return _interpretar_demo(texto, idioma_origen)
+
         logger.warning("IA_API_KEY no configurada. Se devuelve vacío para rellenar manualmente.")
         return {
             "nacionalidad": "",

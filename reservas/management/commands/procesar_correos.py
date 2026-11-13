@@ -12,6 +12,7 @@ Se puede programar en PythonAnywhere como tarea programada cada 3 horas.
 """
 
 import logging
+from datetime import time
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -82,7 +83,7 @@ class Command(BaseCommand):
         no_calendar = options["no_calendar"]
         no_mover = options["no_mover"]
 
-        self.stdout.write(self.style.NOTICE("📨 Iniciando procesamiento de correos..."))
+        self.stdout.write(self.style.NOTICE("[MAIL] Iniciando procesamiento de correos..."))
 
         mail = conectar_imap()
         if not mail:
@@ -191,7 +192,7 @@ class Command(BaseCommand):
 
             except Exception as exc:
                 logger.error(f"Error procesando correo {message_id}: {exc}")
-                self.stderr.write(self.style.ERROR(f"  ✗ Error: {exc}"))
+                self.stderr.write(self.style.ERROR(f"  [X] Error: {exc}"))
                 continue
 
             # Mover a Procesado
@@ -204,7 +205,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"✅ Procesamiento finalizado: {procesados} procesado(s), "
+                f"[OK] Procesamiento finalizado: {procesados} procesado(s), "
                 f"{creados} reserva(s) nueva(s), {actualizados} actualizada(s), "
                 f"{omitidos} omitida(s)."
             )
@@ -244,7 +245,7 @@ class Command(BaseCommand):
             plataforma=plataforma,
             codigo_reserva=datos.get("codigo_reserva", ""),
             fecha_actividad=fecha_actividad or correo["fecha"].date(),
-            hora_actividad=hora_actividad,
+            hora_actividad=hora_actividad or time(10, 0),
             numero_personas=datos.get("numero_personas", 1),
             nombre_cliente=datos.get("nombre_cliente", "Cliente por confirmar"),
             telefono_cliente=datos.get("telefono_cliente", ""),
