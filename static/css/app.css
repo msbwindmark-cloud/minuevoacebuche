@@ -44,15 +44,55 @@ body {
   z-index: 9999;
 }
 
-/* Botones táctiles grandes para móvil (dedos con guantes o sucios) */
+/* Botones: texto e icono alineados y centrados */
 .btn {
   min-height: 48px;
-  min-width: 48px;
+  min-width: auto;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.btn i,
+.btn span,
+.btn svg {
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .btn-sm {
   min-height: 40px;
-  min-width: 40px;
+  min-width: auto;
+}
+
+/* Texto legible en campos de formulario (evita texto blanco sobre fondo claro) */
+.form-control,
+.form-select,
+textarea.form-control {
+  color: #212529 !important;
+  background-color: #ffffff !important;
+}
+
+/* Catch-all: cualquier input/textarea/select hereda texto oscuro */
+input,
+textarea,
+select {
+  color: #212529;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6c757d !important;
+  opacity: 1;
+}
+
+/* Avisos urgentes: texto oscuro sobre fondo amarillo */
+.alert-warning,
+.alert-warning * {
+  color: #664d03 !important;
 }
 
 /* Tarjetas de reserva en pendientes */
