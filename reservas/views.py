@@ -15,6 +15,7 @@ import json
 from datetime import date, timedelta
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.contrib import messages
 from django.core.management import call_command
