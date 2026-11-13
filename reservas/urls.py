@@ -44,6 +44,8 @@ urlpatterns = [
         views.marcar_consulta_respondida,
         name="marcar_consulta_respondida",
     ),
+    # Configuración (solo administra)
+    path("configuracion/", views.configuracion, name="configuracion"),
     path("configuracion/avanzada/", views.configuracion_avanzada, name="configuracion_avanzada"),
 
     # API puntos de recogida
@@ -63,4 +65,11 @@ urlpatterns = [
 
     # Exportar a Excel desde el panel
     path("exportar-excel/", views.exportar_excel_vista, name="exportar_excel_vista"),
+
+    # Ejecutar procesamiento de correos desde web (solo administra)
+    path(
+        "procesar-correos/",
+        views.procesar_correos_vista,
+        name="procesar_correos_vista",
+    ),
 ]

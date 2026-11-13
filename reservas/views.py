@@ -679,3 +679,43 @@ def exportar_excel_vista(request):
     )
     response["Content-Disposition"] = f'attachment; filename="{nombre_archivo}"'
     return response
+
+
+# ---------------------------------------------------------------------------
+# Configuración avanzada: credenciales privadas de Lucía
+# ---------------------------------------------------------------------------
+@administra_required
+def configuracion_avanzada(request):
+    """
+    Permite a Lucía introducir sus credenciales privadas (correo, Google,
+    Maps, IA) desde el panel, sin editar el .env ni compartirlas.
+    """
+    from core.models import Configuracion
+    from core.forms import ConfiguracionForm
+
+    config = Configuracion.get()
+
+    if request.method == "POST":
+        form = ConfiguracionForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                "Credenciales guardadas. La app las usará a partir de ahora.",
+            )
+            registrar_log(
+                usuario=request.user,
+                accion=LogApp.ACCION_EDITAR,
+                modelo="Configuracion",
+                id_objeto=1,
+                detalle="Configuración avanzada actualizada desde el panel.",
+                request=request,
+            )
+            return redirect("configuracion_avanzada")
+    else:
+        form = ConfiguracionForm(instance=config)
+
+    return render(request, "configuracion_avanzada.html", {
+        "form": form,
+        "config": config,
+    })
