@@ -57,10 +57,6 @@ urlpatterns = [
         name="calendar_oauth2callback",
     ),
 
-    # Ejecutar procesamiento de correos desde web (solo superusuario)
-    path(
-        "procesar-correos/",
-        views.procesar_correos_vista,
-        name="procesar_correos_vista",
-    ),
+    # Exportar a Excel desde el panel
+    path("exportar-excel/", views.exportar_excel_vista, name="exportar_excel_vista"),
 ]

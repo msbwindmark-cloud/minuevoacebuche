@@ -141,6 +141,42 @@
   </div>
 </div>
 
+<!-- Exportar a Excel -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="card-title"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel (cuentas de turismo)</h5>
+    <p class="text-muted small">Genera un Excel con 3 hojas: reservas del mes, resumen por plataforma y resumen mensual.</p>
+    <form method="get" action="{% url 'exportar_excel_vista' %}" class="row g-2 align-items-end">
+      <div class="col-auto">
+        <label class="form-label small">Mes</label>
+        <select name="mes" class="form-select form-select-sm">
+          <option value="1">Enero</option>
+          <option value="2">Febrero</option>
+          <option value="3">Marzo</option>
+          <option value="4">Abril</option>
+          <option value="5">Mayo</option>
+          <option value="6">Junio</option>
+          <option value="7">Julio</option>
+          <option value="8">Agosto</option>
+          <option value="9">Septiembre</option>
+          <option value="10">Octubre</option>
+          <option value="11" selected>Noviembre</option>
+          <option value="12">Diciembre</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <label class="form-label small">Año</label>
+        <input type="number" name="anio" value="2026" class="form-control form-control-sm" style="width: 5rem;">
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-success btn-sm">
+          <i class="bi bi-download"></i> Descargar Excel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <a href="{% url 'pendientes' %}" class="btn btn-outline-secondary">
   <i class="bi bi-arrow-left"></i> Volver a pendientes
 </a>

@@ -122,6 +122,10 @@ def _extraer_nombre(texto):
     m = re.search(r"viajero\s*principal\s*[:]\s*([^\n,;]+)", texto, re.IGNORECASE)
     if m:
         return m.group(1).strip()
+    # Airbnb: "Nombre de pila: Pedro"
+    m = re.search(r"nombre\s*de\s*pila\s*[:]\s*([^\n,;]+)", texto, re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
     return ""
 
 
