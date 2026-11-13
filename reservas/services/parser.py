@@ -96,7 +96,12 @@ def _extraer_fecha_hora(texto):
 
 
 def _extraer_numero_personas(texto):
+    # "2 viajeros", "2 personas", "2 pax", etc.
     m = re.search(r"(\d+)\s*(pax|personas|viajeros|participantes)", texto, re.IGNORECASE)
+    if m:
+        return int(m.group(1))
+    # "viajeros: 2", "personas: 3", "pax: 1"
+    m = re.search(r"(?:viajeros|personas|pax|participantes)\s*[:]\s*(\d+)", texto, re.IGNORECASE)
     if m:
         return int(m.group(1))
     # Airbnb: número de viajeros
