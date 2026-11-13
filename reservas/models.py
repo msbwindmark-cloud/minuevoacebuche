@@ -172,3 +172,31 @@ class Mensaje(models.Model):
 
     def __str__(self):
         return f"{self.get_direccion_display()} - {self.fecha}"
+
+
+class Consulta(models.Model):
+    """Consulta de un cliente por web o correo directo (sin reserva cerrada aún)."""
+
+    plataforma = models.ForeignKey(
+        Plataforma, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name="plataforma",
+    )
+    nombre = models.CharField("nombre", max_length=100, blank=True)
+    telefono = models.CharField("teléfono", max_length=30, blank=True)
+    email = models.EmailField("correo", blank=True)
+    texto = models.TextField("texto de la consulta")
+    respondida = models.BooleanField("respondida", default=False)
+    reserva = models.ForeignKey(
+        Reserva, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name="reserva creada",
+        related_name="consultas",
+    )
+    fecha_creacion = models.DateTimeField("fecha", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "consulta"
+        verbose_name_plural = "consultas"
+        ordering = ["-fecha_creacion"]
+
+    def __str__(self):
+        return f"Consulta de {self.nombre or 'cliente'} ({self.plataforma})"

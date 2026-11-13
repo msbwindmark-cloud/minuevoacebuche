@@ -38,8 +38,12 @@ urlpatterns = [
     # Calendario
     path("calendario/", views.calendario, name="calendario"),
 
-    # Configuración (solo administra)
-    path("configuracion/", views.configuracion, name="configuracion"),
+    # Marcar consulta como respondida
+    path(
+        "consulta/<int:pk>/respondida/",
+        views.marcar_consulta_respondida,
+        name="marcar_consulta_respondida",
+    ),
     path("configuracion/avanzada/", views.configuracion_avanzada, name="configuracion_avanzada"),
 
     # API puntos de recogida

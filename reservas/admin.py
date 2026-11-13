@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Plataforma, EstadoReserva, PuntoRecogida, Reserva,
-    Conversacion, Mensaje,
+    Conversacion, Mensaje, Consulta,
 )
 
 
@@ -45,4 +45,8 @@ class ConversacionAdmin(admin.ModelAdmin):
 class MensajeAdmin(admin.ModelAdmin):
     list_display = ("conversacion", "direccion", "fecha", "plataforma_mensaje")
     list_filter = ("direccion", "plataforma_mensaje")
-    search_fields = ("texto",)
+@admin.register(Consulta)
+class ConsultaAdmin(admin.ModelAdmin):
+    list_display = ("nombre", "plataforma", "respondida", "fecha_creacion")
+    list_filter = ("respondida", "plataforma")
+    search_fields = ("nombre", "texto", "email")

@@ -188,15 +188,52 @@ class Command(BaseCommand):
                             omitidos += 1
 
                     elif tipo_correo == "cancelacion_cambio":
-                        self.stdout.write(
-                            self.style.WARNING(f"    Cancelacion/cambio detectado: {asunto[:50].encode('ascii', 'replace').decode('ascii')}")
-                        )
-                        omitidos += 1
-                        # Aqui se podria buscar la reserva y cambiar su estado a cancelada
+                        reserva = _buscar_reserva_por_codigo(asunto + " " + cuerpo)
+                        if reserva:
+                            estado_cancelada = _obtener_estado("cancelada")
+                            estado_anterior = reserva.estado.nombre
+                            reserva.estado = estado_cancelada
+                            reserva.color_evento = "gris"
+                            reserva.fecha_actualizacion = timezone.now()
+                            reserva.save()
+                            registrar_log(
+                                usuario=None,
+                                accion=LogApp.ACCION_CAMBIO_ESTADO,
+                                modelo="Reserva",
+                                id_objeto=reserva.pk,
+                                detalle=f"Cancelacion/cambio detectado: estado de '{estado_anterior}' a 'cancelada'.",
+                            )
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"    Reserva {reserva.codigo_reserva or reserva.pk} marcada como cancelada."
+                                )
+                            )
+                        else:
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"    Cancelacion/cambio sin reserva asociada: {asunto[:50].encode('ascii', 'replace').decode('ascii')}"
+                                )
+                            )
+                            omitidos += 1
 
                     else:
-                        # Consulta web, correo directo u otro
-                        omitidos += 1
+                        # Consulta web, correo directo u otro -> guardar como consulta pendiente
+                        from reservas.models import Consulta
+                        from reservas.services.parser import _extraer_nombre, _extraer_telefono, _extraer_email
+
+                        plataforma_obj = _obtener_plataforma(plataforma_nombre)
+                        Consulta.objects.create(
+                            plataforma=plataforma_obj,
+                            nombre=_extraer_nombre(cuerpo) or _extraer_nombre(asunto),
+                            telefono=_extraer_telefono(cuerpo),
+                            email=_extraer_email(cuerpo),
+                            texto=cuerpo or asunto,
+                        )
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"    Consulta guardada como pendiente: {asunto[:50].encode('ascii', 'replace').decode('ascii')}"
+                            )
+                        )
 
             except Exception as exc:
                 exc_seguro = str(exc).encode("ascii", "replace").decode("ascii")

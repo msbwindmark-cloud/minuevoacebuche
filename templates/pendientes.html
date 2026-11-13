@@ -29,7 +29,37 @@
   </div>
 {% endif %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<!-- Consultas pendientes (web / correo directo) -->
+{% if consultas_pendientes %}
+  <div class="card shadow-sm border-info mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-chat-dots"></i> Consultas pendientes</h5>
+      <p class="text-muted small mb-2">Peticiones por web o correo que aún no se han cerrado como reserva.</p>
+      <ul class="list-group list-group-flush">
+        {% for c in consultas_pendientes %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <strong>{{ c.nombre|default:"Cliente" }}</strong>
+              {% if c.plataforma %} · {{ c.plataforma.nombre }}{% endif %}
+              <br>
+              <small class="text-muted">{{ c.texto|truncatechars:120 }}</small>
+              {% if c.telefono %}<br><small>Tlf: {{ c.telefono }}</small>{% endif %}
+              {% if c.email %}<br><small>Correo: {{ c.email }}</small>{% endif %}
+            </div>
+            <form method="post" action="{% url 'marcar_consulta_respondida' c.pk %}" class="ms-2">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-check2"></i> Respondida
+              </button>
+            </form>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endif %}
   <h2><i class="bi bi-clock-history"></i> Pendientes de atención</h2>
   {% if reservas %}
     <a href="{% url 'reserva_detalle' reservas.first.pk %}" class="btn btn-outline-primary btn-sm">

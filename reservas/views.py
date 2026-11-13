@@ -123,11 +123,16 @@ def pendientes(request):
     # Ordenar avisos: más próximos primero
     avisos_urgentes.sort(key=lambda a: a["reserva"].fecha_actividad)
 
+    from reservas.models import Consulta
+
+    consultas_pendientes = Consulta.objects.filter(respondida=False).select_related("plataforma")
+
     return render(request, "pendientes.html", {
         "reservas": reservas,
         "recientes": recientes,
         "estados": estados,
         "avisos_urgentes": avisos_urgentes,
+        "consultas_pendientes": consultas_pendientes,
     })
 
 
@@ -430,7 +435,14 @@ def configuracion(request):
 # Configuración avanzada: credenciales privadas de Lucía
 # ---------------------------------------------------------------------------
 @administra_required
-def configuracion_avanzada(request):
+@require_POST
+def marcar_consulta_respondida(request, pk):
+    from reservas.models import Consulta
+
+    consulta = get_object_or_404(Consulta, pk=pk)
+    consulta.respondida = True
+    consulta.save(update_fields=["respondida"])
+    return redirect("pendientes")
     """
     Permite a Lucía introducir sus credenciales privadas (correo, Google,
     Maps, IA) desde el panel, sin editar el .env ni compartirlas.
