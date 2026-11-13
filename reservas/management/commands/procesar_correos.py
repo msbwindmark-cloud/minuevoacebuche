@@ -217,23 +217,27 @@ class Command(BaseCommand):
                             omitidos += 1
 
                     else:
-                        # Consulta web, correo directo u otro -> guardar como consulta pendiente
-                        from reservas.models import Consulta
-                        from reservas.services.parser import _extraer_nombre, _extraer_telefono, _extraer_email
+                        # Consulta web o correo directo -> guardar como consulta pendiente
+                        if tipo_correo in ("consulta_web", "correo_directo"):
+                            from reservas.models import Consulta
+                            from reservas.services.parser import _extraer_nombre, _extraer_telefono, _extraer_email
 
-                        plataforma_obj = _obtener_plataforma(plataforma_nombre)
-                        Consulta.objects.create(
-                            plataforma=plataforma_obj,
-                            nombre=_extraer_nombre(cuerpo) or _extraer_nombre(asunto),
-                            telefono=_extraer_telefono(cuerpo),
-                            email=_extraer_email(cuerpo),
-                            texto=cuerpo or asunto,
-                        )
-                        self.stdout.write(
-                            self.style.WARNING(
-                                f"    Consulta guardada como pendiente: {asunto[:50].encode('ascii', 'replace').decode('ascii')}"
+                            plataforma_obj = _obtener_plataforma(plataforma_nombre)
+                            Consulta.objects.create(
+                                plataforma=plataforma_obj,
+                                nombre=_extraer_nombre(cuerpo) or _extraer_nombre(asunto),
+                                telefono=_extraer_telefono(cuerpo),
+                                email=_extraer_email(cuerpo),
+                                texto=cuerpo or asunto,
                             )
-                        )
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"    Consulta guardada como pendiente: {asunto[:50].encode('ascii', 'replace').decode('ascii')}"
+                                )
+                            )
+                        else:
+                            # Otros (publicidad, avisos, backups): solo se archivan
+                            omitidos += 1
 
             except Exception as exc:
                 exc_seguro = str(exc).encode("ascii", "replace").decode("ascii")

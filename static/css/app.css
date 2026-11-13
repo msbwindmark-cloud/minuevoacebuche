@@ -46,7 +46,7 @@ body {
 
 /* Botones: texto e icono alineados y centrados */
 .btn {
-  min-height: 48px;
+  min-height: 44px;
   min-width: auto;
   display: inline-flex !important;
   align-items: center !important;

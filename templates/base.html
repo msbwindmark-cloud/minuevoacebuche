@@ -25,7 +25,7 @@
     href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css"
   >
 
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=3">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=6">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -73,7 +73,7 @@
   </nav>
 
   <!-- Contenido -->
-  <div class="container py-4">
+  <div class="container py-4 px-3 px-md-4 px-lg-5">
     {% if messages %}
       {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -86,7 +86,7 @@
     {% block content %}{% endblock %}
   </div>
 
-  <footer class="border-top mt-5 py-3 text-center small text-muted">
+  <footer class="border-top mt-5 pt-4 pb-3 text-center small text-muted">
     Centro Ecuestre El Acebuche &middot; App de reservas de turismo ecuestre
   </footer>
 

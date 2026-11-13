@@ -69,7 +69,8 @@
 </div>
 
 {% if reservas %}
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+  <div class="mx-auto" style="max-width: 1100px;">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-4 justify-content-center">
     {% for r in reservas %}
       <div class="col">
         <div class="card reserva-card h-100 shadow-sm">
@@ -118,6 +119,7 @@
         </div>
       </div>
     {% endfor %}
+  </div>
   </div>
 {% else %}
   <div class="text-center py-5">
