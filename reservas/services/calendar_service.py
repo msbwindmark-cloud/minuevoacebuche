@@ -28,10 +28,11 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 def _credenciales_disponibles():
     """Devuelve True si hay credenciales de Google configuradas."""
-    return bool(
-        getattr(settings, "GOOGLE_CLIENT_ID", "")
-        and getattr(settings, "GOOGLE_CLIENT_SECRET", "")
-    )
+    from core.models import Configuracion
+    config = Configuracion.get()
+    client_id = config.google_client_id or getattr(settings, "GOOGLE_CLIENT_ID", "")
+    client_secret = config.google_client_secret or getattr(settings, "GOOGLE_CLIENT_SECRET", "")
+    return bool(client_id and client_secret)
 
 
 def obtener_servicio_calendar():
@@ -49,6 +50,11 @@ def obtener_servicio_calendar():
         )
         return None
 
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    token_file = None
+    # token file path from settings or config default
     token_file = getattr(settings, "GOOGLE_TOKEN_FILE", None)
     creds = None
 
@@ -91,7 +97,9 @@ def crear_o_actualizar_evento(reserva):
     if not service:
         return None
 
-    calendar_id = getattr(settings, "GOOGLE_CALENDAR_ID", "luciagilran2014@gmail.com")
+    from core.models import Configuracion
+    config = Configuracion.get()
+    calendar_id = config.google_calendar_id or getattr(settings, "GOOGLE_CALENDAR_ID", "luciagilran2014@gmail.com")
 
     from .parser import formatear_fecha_evento, generar_descripcion_evento
 

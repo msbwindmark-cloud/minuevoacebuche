@@ -26,6 +26,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST, require_GET
 
 from core.models import LogApp, registrar_log
+from core.forms import ConfiguracionForm
 from .models import Reserva, EstadoReserva, PuntoRecogida, Plataforma, Conversacion, Mensaje
 from .services.ia_service import interpretar_respuesta_cliente, aplicar_interpretacion_a_reserva
 from .services.maps_service import buscar_punto_recogida_mas_cercano
@@ -89,7 +90,10 @@ def pendientes(request):
     # --- Avisos urgentes (sección 5 y 13 del Word) ---
     hoy = date.today()
     manana = hoy + timedelta(days=1)
-    dias_aviso = int(getattr(settings, "AVISO_RESERVA_PROXIMA_DIAS", "1"))
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    dias_aviso = int(config.aviso_reserva_proxima_dias or getattr(settings, "AVISO_RESERVA_PROXIMA_DIAS", 1))
     fecha_limite = hoy + timedelta(days=dias_aviso)
 
     avisos_urgentes = []
@@ -418,6 +422,45 @@ def configuracion(request):
         "puntos": puntos,
         "estados": estados,
         "plataformas": plataformas,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Configuración avanzada: credenciales privadas de Lucía
+# ---------------------------------------------------------------------------
+@administra_required
+def configuracion_avanzada(request):
+    """
+    Permite a Lucía introducir sus credenciales privadas (correo, Google,
+    Maps, IA) desde el panel, sin editar el .env ni compartirlas.
+    """
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+
+    if request.method == "POST":
+        form = ConfiguracionForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                "Credenciales guardadas. La app las usará a partir de ahora.",
+            )
+            registrar_log(
+                usuario=request.user,
+                accion=LogApp.ACCION_EDITAR,
+                modelo="Configuracion",
+                id_objeto=1,
+                detalle="Configuración avanzada actualizada desde el panel.",
+                request=request,
+            )
+            return redirect("configuracion_avanzada")
+    else:
+        form = ConfiguracionForm(instance=config)
+
+    return render(request, "configuracion_avanzada.html", {
+        "form": form,
+        "config": config,
     })
 
 

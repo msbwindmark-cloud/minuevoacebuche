@@ -40,11 +40,14 @@ def conectar_imap():
     Conecta al servidor IMAP de Hostalia y selecciona la carpeta de entrada.
     Devuelve el objeto IMAP4_SSL o None si falla.
     """
-    host = getattr(settings, "IMAP_HOST", "imap.servidor-correo.net")
-    port = getattr(settings, "IMAP_PORT", 993)
-    user = getattr(settings, "IMAP_USER", "")
-    password = getattr(settings, "IMAP_PASSWORD", "")
-    carpeta = getattr(settings, "IMAP_CARPETA_ENTRADA", "INBOX")
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    host = config.imap_host or getattr(settings, "IMAP_HOST", "imap.servidor-correo.net")
+    port = config.imap_port or getattr(settings, "IMAP_PORT", 993)
+    user = config.imap_user or getattr(settings, "IMAP_USER", "")
+    password = config.imap_password or getattr(settings, "IMAP_PASSWORD", "")
+    carpeta = config.imap_carpeta_entrada or getattr(settings, "IMAP_CARPETA_ENTRADA", "INBOX")
 
     if not user or not password:
         logger.warning("IMAP_USER o IMAP_PASSWORD no configurados en .env")
@@ -66,8 +69,6 @@ def obtener_correos_no_leidos(mail, limite=None):
     Devuelve una lista de diccionarios con los correos no leídos.
     Si se indica `limite`, solo se procesan los `limite` correos más recientes.
     """
-    carpeta_procesado = getattr(settings, "IMAP_CARPETA_PROCESADO", "Procesado")
-
     # Buscar mensajes no vistos
     status, mensajes = mail.search(None, "UNSEEN")
     if status != "OK":
@@ -137,7 +138,10 @@ def mover_a_procesado(mail, raw_uid):
     Mueve un correo (por UID) de INBOX a la carpeta Procesado.
     Si la carpeta no existe, intenta crearla.
     """
-    carpeta_procesado = getattr(settings, "IMAP_CARPETA_PROCESADO", "Procesado")
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    carpeta_procesado = config.imap_carpeta_procesado or getattr(settings, "IMAP_CARPETA_PROCESADO", "Procesado")
 
     try:
         # Copiar a Procesado

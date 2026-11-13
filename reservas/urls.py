@@ -40,6 +40,7 @@ urlpatterns = [
 
     # Configuración (solo administra)
     path("configuracion/", views.configuracion, name="configuracion"),
+    path("configuracion/avanzada/", views.configuracion_avanzada, name="configuracion_avanzada"),
 
     # API puntos de recogida
     path("api/puntos-recogida/", views.api_puntos_recogida, name="api_puntos_recogida"),

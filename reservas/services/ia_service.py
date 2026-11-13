@@ -21,10 +21,16 @@ logger = logging.getLogger(__name__)
 
 def _clave_ia_valida():
     """True si hay una clave de IA real (no vacía ni de ejemplo)."""
-    api_key = (getattr(settings, "IA_API_KEY", "") or "").strip()
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    api_key = (config.ia_api_key or getattr(settings, "IA_API_KEY", "")).strip()
     if not api_key:
         return False
     return not api_key.upper().startswith("API_KEY_")
+
+
+# Países que reconoce el modo demo (sin IA real)
 
 
 # Países que reconoce el modo demo (sin IA real)
@@ -169,11 +175,16 @@ def interpretar_respuesta_cliente(texto, idioma_origen="en"):
     Si no hay clave de IA configurada, devuelve valores vacíos para que
     Lucía lo complete manualmente desde el panel de pendientes.
     """
-    api_key = getattr(settings, "IA_API_KEY", "")
-    proveedor = getattr(settings, "IA_PROVEEDOR", "claude")
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    api_key = (config.ia_api_key or getattr(settings, "IA_API_KEY", "")).strip()
+    proveedor = (config.ia_proveedor or getattr(settings, "IA_PROVEEDOR", "claude")).strip()
+
+    modo_demo_activo = getattr(settings, "MODO_DEMO", False) or config.modo_demo
 
     if not _clave_ia_valida():
-        if getattr(settings, "MODO_DEMO", False):
+        if modo_demo_activo:
             logger.info("IA en MODO DEMO: interpretación simulada sin IA_API_KEY real.")
             return _interpretar_demo(texto, idioma_origen)
 

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Configuración avanzada - El Acebuche{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-shield-lock"></i> Configuración avanzada (credenciales)</h2>
+<p class="text-muted">
+  Aquí Lucía puede introducir sus claves privadas (correo, Google, Maps, IA)
+  directamente, sin editar archivos ni compartirlas con nadie.
+  Los valores se guardan en la base de datos de la app.
+</p>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="alert alert-info small" role="alert">
+  <i class="bi bi-info-circle me-1"></i>
+  <strong>Modo demo:</strong> mientras el interruptor "Modo demo" esté activo,
+  la IA y Google Maps se simulan en local y no se usan las claves.
+  Desactívalo cuando hayas introducido las claves reales.
+</div>
+
+<form method="post" action="{% url 'configuracion_avanzada' %}">
+  {% csrf_token %}
+
+  <!-- Correo -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-envelope"></i> Correo (Hostalia / SMTP)</h5>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label small">Host SMTP</label>
+          {{ form.email_host }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">Puerto</label>
+          {{ form.email_port }}
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <div class="form-check mb-2">
+            {{ form.email_use_tls }}
+            <label class="form-check-label small">TLS</label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">Usuario</label>
+          {{ form.email_host_user }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Contraseña del correo</label>
+          {{ form.email_host_password }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Correo remitente</label>
+          {{ form.default_from_email }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAP -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-inbox"></i> IMAP (lectura de correos)</h5>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label small">Host IMAP</label>
+          {{ form.imap_host }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">Puerto</label>
+          {{ form.imap_port }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Usuario IMAP</label>
+          {{ form.imap_user }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Contraseña IMAP</label>
+          {{ form.imap_password }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small">Carpeta entrada</label>
+          {{ form.imap_carpeta_entrada }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small">Carpeta procesado</label>
+          {{ form.imap_carpeta_procesado }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Calendar -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-calendar"></i> Google Calendar</h5>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label small">ID del calendario</label>
+          {{ form.google_calendar_id }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Redirect URI</label>
+          {{ form.google_redirect_uri }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Google Client ID</label>
+          {{ form.google_client_id }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small">Google Client Secret</label>
+          {{ form.google_client_secret }}
+        </div>
+      </div>
+      <p class="small text-muted mt-2 mb-0">
+        Después de guardar, autoriza una vez en
+        <a href="{% url 'calendar_autorizar' %}">/calendar/autorizar/</a>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Google Maps -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-geo-alt"></i> Google Maps</h5>
+      <label class="form-label small">API Key</label>
+      {{ form.google_maps_api_key }}
+    </div>
+  </div>
+
+  <!-- IA -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-robot"></i> Inteligencia artificial</h5>
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label small">Proveedor</label>
+          {{ form.ia_proveedor }}
+        </div>
+        <div class="col-md-9">
+          <label class="form-label small">API Key</label>
+          {{ form.ia_api_key }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Otros -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-gear"></i> Otros</h5>
+      <div class="row g-2">
+        <div class="col-md-4 d-flex align-items-center">
+          <div class="form-check">
+            {{ form.modo_demo }}
+            <label class="form-check-label">Modo demo (simular IA/Maps)</label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">Precio transporte (€)</label>
+          {{ form.precio_transporte }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">Días aviso urgente</label>
+          {{ form.aviso_reserva_proxima_dias }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plantillas -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title"><i class="bi bi-chat-text"></i> Plantillas de mensajes</h5>
+      <div class="mb-2">
+        <label class="form-label small">Mensaje de preguntas (8.1)</label>
+        {{ form.mensaje_preguntas }}
+      </div>
+      <div class="mb-2">
+        <label class="form-label small">Respuesta sin transporte (8.2)</label>
+        {{ form.respuesta_sin_transporte }}
+      </div>
+      <div class="mb-2">
+        <label class="form-label small">Respuesta con transporte (8.3)</label>
+        {{ form.respuesta_con_transporte }}
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-save"></i> Guardar credenciales
+    </button>
+    <a href="{% url 'configuracion' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Volver
+    </a>
+  </div>
+</form>
+
+<a href="{% url 'pendientes' %}" class="btn btn-outline-secondary mt-3">
+  <i class="bi bi-arrow-left"></i> Volver a pendientes
+</a>
+{% endblock %}

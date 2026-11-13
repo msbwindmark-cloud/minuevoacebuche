@@ -55,19 +55,17 @@ RESPUESTA_CON_TRANSPORTE = (
 
 
 def obtener_mensaje_preguntas():
-    """
-    Devuelve el mensaje de preguntas (sección 8.1 del Word).
-    Se puede personalizar desde la configuración de la app.
-    """
-    return getattr(settings, "MENSAJE_PREGUNTAS", MENSAJE_PREGUNTAS)
+    from core.models import Configuracion
+    config = Configuracion.get()
+    plantilla = config.mensaje_preguntas or getattr(settings, "MENSAJE_PREGUNTAS", MENSAJE_PREGUNTAS)
+    return plantilla or MENSAJE_PREGUNTAS
 
 
 def obtener_respuesta_sin_transportes(nombre, fecha, hora):
-    """
-    Devuelve la respuesta si el cliente NO necesita transporte (sección 8.2).
-    """
-    plantilla = getattr(settings, "RESPUESTA_SIN_TRANSPORTE", RESPUESTA_SIN_TRANSPORTE)
-    return plantilla.format(
+    from core.models import Configuracion
+    config = Configuracion.get()
+    plantilla = config.respuesta_sin_transporte or getattr(settings, "RESPUESTA_SIN_TRANSPORTE", RESPUESTA_SIN_TRANSPORTE)
+    return (plantilla or RESPUESTA_SIN_TRANSPORTE).format(
         nombre=nombre,
         fecha=fecha,
         hora=hora,
@@ -75,11 +73,10 @@ def obtener_respuesta_sin_transportes(nombre, fecha, hora):
 
 
 def obtener_respuesta_con_transporte(nombre, fecha, hora_recogida, punto, enlace_maps):
-    """
-    Devuelve la respuesta si el cliente SÍ necesita transporte (sección 8.3).
-    """
-    plantilla = getattr(settings, "RESPUESTA_CON_TRANSPORTE", RESPUESTA_CON_TRANSPORTE)
-    return plantilla.format(
+    from core.models import Configuracion
+    config = Configuracion.get()
+    plantilla = config.respuesta_con_transporte or getattr(settings, "RESPUESTA_CON_TRANSPORTE", RESPUESTA_CON_TRANSPORTE)
+    return (plantilla or RESPUESTA_CON_TRANSPORTE).format(
         nombre=nombre,
         fecha=fecha,
         hora_recogida=hora_recogida,

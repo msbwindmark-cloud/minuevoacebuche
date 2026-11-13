@@ -50,7 +50,10 @@ _COORDS_DEMO = {
 
 def _clave_maps_valida():
     """True si hay una API key de Google Maps real (no vacía ni de ejemplo)."""
-    api_key = (getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "").strip()
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    api_key = (config.google_maps_api_key or getattr(settings, "GOOGLE_MAPS_API_KEY", "")).strip()
     if not api_key:
         return False
     return not api_key.upper().startswith("API_KEY_")
@@ -101,9 +104,12 @@ def geocodificar_direccion(direccion):
     Geocodifica una dirección usando Google Maps Geocoding API.
     Devuelve (latitud, longitud) o (None, None) si falla o no hay API key.
     """
-    api_key = getattr(settings, "GOOGLE_MAPS_API_KEY", "")
+    from core.models import Configuracion
+
+    config = Configuracion.get()
+    api_key = (config.google_maps_api_key or getattr(settings, "GOOGLE_MAPS_API_KEY", "")).strip()
     if not _clave_maps_valida():
-        if getattr(settings, "MODO_DEMO", False) and direccion:
+        if (getattr(settings, "MODO_DEMO", False) or config.modo_demo) and direccion:
             lat, lon = _geocodificar_demo(direccion)
             logger.info("Geocodificación SIMULADA (modo demo) para: %s", direccion)
             return lat, lon
@@ -150,8 +156,7 @@ def calcular_tiempo_a_pie(origen_lat, origen_lon, destino_lat, destino_lon):
 
     Devuelve minutos estimados o None.
     """
-    api_key = getattr(settings, "GOOGLE_MAPS_API_KEY", "")
-
+    # La validez se comprueba con _clave_maps_valida(); aquí solo se usa si es válida
     if _clave_maps_valida():
         try:
             import requests
