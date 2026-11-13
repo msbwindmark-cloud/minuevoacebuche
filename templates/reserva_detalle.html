@@ -316,8 +316,14 @@
               html += "<div class='mt-2 alert alert-warning'><strong>⚠ Revisión manual recomendada</strong> - Lucía debe verificar los datos.</div>";
             }
             document.getElementById("iaResultado").innerHTML = html;
-            Swal.fire({icon: "success", title: "IA completada", timer: 2000});
-            setTimeout(() => window.location.reload(), 1500);
+            Swal.fire({
+              icon: "success",
+              title: "IA completada",
+              html: html,
+              timer: 3000,
+              timerProgressBar: true,
+            });
+            setTimeout(() => window.location.reload(), 3000);
           } else {
             Swal.fire({icon: "error", title: "Error", text: data.error});
           }
