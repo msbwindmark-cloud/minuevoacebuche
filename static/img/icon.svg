@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="El Acebuche">
+  <rect width="512" height="512" rx="96" fill="#78c2ad"/>
+  <path d="M150 190a106 106 0 1 0 212 0" fill="none" stroke="#ffffff" stroke-width="46" stroke-linecap="round"/>
+  <circle cx="173" cy="188" r="9" fill="#78c2ad"/>
+  <circle cx="339" cy="188" r="9" fill="#78c2ad"/>
+</svg>

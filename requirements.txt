@@ -1,0 +1,14 @@
+Django>=5.2,<7
+whitenoise
+
+# Para leer correos por IMAP (Hostalia)
+imapclient
+
+# Para Google Calendar API (opcional, instalar en producción)
+# google-auth
+# google-auth-oauthlib
+# google-auth-httplib2
+# google-api-python-client
+
+# Para variables de entorno .env (opcional)
+# python-dotenv

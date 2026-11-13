@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+{% load app_filters %}
+
+{% block title %}Reserva {{ reserva.codigo_reserva }} - El Acebuche{% endblock %}
+
+{% block content %}
+<a href="{% url 'pendientes' %}" class="btn btn-outline-secondary mb-3">
+  <i class="bi bi-arrow-left"></i> Volver a pendientes
+</a>
+
+<div class="row">
+  <!-- Datos principales -->
+  <div class="col-md-8">
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0">
+            Actividad turismo ({{ reserva.numero_personas }}pax)
+          </h5>
+          <span
+            class="badge bg-{% if reserva.estado.color == 'amarillo' %}warning text-dark{% elif reserva.estado.color == 'rojo' %}danger{% elif reserva.estado.color == 'verde' %}success{% else %}secondary{% endif %} fs-6"
+          >
+            {{ reserva.estado.nombre }}
+          </span>
+        </div>
+
+        <table class="table table-borderless small">
+          <tr>
+            <th style="width: 35%;" class="text-muted">Plataforma</th>
+            <td>{{ reserva.plataforma.nombre }}</td>
+          </tr>
+          {% if reserva.codigo_reserva %}
+          <tr>
+            <th class="text-muted">Código reserva</th>
+            <td>{{ reserva.codigo_reserva }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <th class="text-muted">Fecha y hora</th>
+            <td>{{ reserva.fecha_actividad|date:"d/m/Y" }} a las {{ reserva.hora_actividad|time:"H:i" }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Cliente</th>
+            <td>{{ reserva.nombre_cliente }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Personas</th>
+            <td>{{ reserva.numero_personas }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Teléfono</th>
+            <td>{{ reserva.telefono_cliente|default:"-" }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Correo</th>
+            <td>{{ reserva.email_cliente|default:"-" }}</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Idioma</th>
+            <td>{{ reserva.idioma }}</td>
+          </tr>
+          {% if reserva.nacionalidad %}
+          <tr>
+            <th class="text-muted">Nacionalidad</th>
+            <td>{{ reserva.nacionalidad }}</td>
+          </tr>
+          {% endif %}
+          {% if reserva.edades %}
+          <tr>
+            <th class="text-muted">Edades</th>
+            <td>{{ reserva.edades|join:", " }}</td>
+          </tr>
+          {% endif %}
+          {% if reserva.experiencia %}
+          <tr>
+            <th class="text-muted">Experiencia</th>
+            <td>{{ reserva.experiencia }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <th class="text-muted">Transporte</th>
+            <td>
+              {% if reserva.quiere_transporte %}
+                Sí (60 €/vehículo)
+                {% if reserva.direccion_alojamiento %}<br><small class="text-muted">{{ reserva.direccion_alojamiento }}</small>{% endif %}
+                {% if reserva.punto_recogida %}
+                  <br><small class="text-muted">Punto: {{ reserva.punto_recogida.nombre }}</small>
+                {% else %}
+                  <br><span class="text-warning">⚠ Punto de recogida sin decidir</span>
+                {% endif %}
+              {% else %}
+                No
+              {% endif %}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Importe y cobro (campos del Excel) -->
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="card-title text-muted text-uppercase small">Importe y cobro</h6>
+        <table class="table table-borderless small">
+          <tr>
+            <th class="text-muted">Importe actividad</th>
+            <td>{{ reserva.precio_actividad }} €</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Cobrado</th>
+            <td>{{ reserva.cobrado }} €</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Porcentaje Lucía</th>
+            <td>{{ reserva.porcentaje_lucia }}%</td>
+          </tr>
+          <tr>
+            <th class="text-muted">Pago a otros</th>
+            <td>{{ reserva.pago_otros }} €</td>
+          </tr>
+          <tr>
+            <th class="text-muted fw-bold">Total experiencia</th>
+            <td class="fw-bold">{{ reserva.total_experiencia }} €</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Acciones IA y Maps (solo administra) -->
+    {% if user.perfil.es_administra %}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="card-title text-muted text-uppercase small">Asistente IA y Google Maps</h6>
+
+        <!-- Interpretar respuesta de cliente -->
+        <div class="mb-3">
+          <label class="form-label small text-muted">Respuesta del cliente (texto libre)</label>
+          <textarea id="textoRespuesta" class="form-control form-control-sm" rows="3" placeholder="Pega aquí la respuesta del cliente en cualquier idioma..."></textarea>
+          <div class="mt-2">
+            <button type="button" class="btn btn-outline-info btn-sm" id="btnInterpretarIA">
+              <i class="bi bi-robot"></i> Interpretar con IA
+            </button>
+            <span id="iaResultado" class="ms-2 small text-muted"></span>
+          </div>
+        </div>
+
+        <!-- Buscar punto de recogida -->
+        <div class="mb-3">
+          <label class="form-label small text-muted">Dirección de alojamiento</label>
+          <input type="text" id="direccionAlojamiento" class="form-control form-control-sm" value="{{ reserva.direccion_alojamiento|default:'' }}" placeholder="Ej. Hotel Bécquer, Sevilla">
+          <div class="mt-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="btnBuscarPunto">
+              <i class="bi bi-geo-alt"></i> Buscar punto más cercano (Maps)
+            </button>
+            <span id="mapaResultado" class="ms-2 small text-muted"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Mensajes automáticos al cliente (secciones 8.1, 8.2, 8.3 del Word) -->
+    {% if user.perfil.es_administra %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title text-muted text-uppercase small">Mensajes al cliente</h6>
+
+        <div class="mb-2">
+          <label class="form-label small text-muted">1. Mensaje de preguntas (8.1)</label>
+          <textarea class="form-control form-control-sm" rows="3" readonly>{{ mensaje_preguntas }}</textarea>
+          <div class="mt-1">
+            <a href="{{ enlace_whatsapp }}" target="_blank" class="btn btn-outline-success btn-sm">
+              <i class="bi bi-whatsapp"></i> Enviar por WhatsApp
+            </a>
+          </div>
+        </div>
+
+        {% if not reserva.quiere_transporte and respuesta_sin_transporte %}
+        <div class="mb-2">
+          <label class="form-label small text-muted">2. Respuesta SIN transporte (8.2)</label>
+          <textarea class="form-control form-control-sm" rows="3" readonly>{{ respuesta_sin_transporte }}</textarea>
+          <div class="mt-1">
+            <a href="{{ enlace_whatsapp }}" target="_blank" class="btn btn-outline-success btn-sm">
+              <i class="bi bi-whatsapp"></i> Enviar por WhatsApp
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if reserva.quiere_transporte and respuesta_transporte %}
+        <div class="mb-2">
+          <label class="form-label small text-muted">3. Respuesta CON transporte (8.3)</label>
+          <textarea class="form-control form-control-sm" rows="3" readonly>{{ respuesta_transporte }}</textarea>
+          <div class="mt-1">
+            <a href="{{ enlace_whatsapp }}" target="_blank" class="btn btn-outline-success btn-sm">
+              <i class="bi bi-whatsapp"></i> Enviar por WhatsApp
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="mt-2">
+          <a href="{{ enlace_aviso_listo }}" target="_blank" class="btn btn-outline-info btn-sm">
+            <i class="bi bi-check-circle"></i> Aviso "coche listo" por WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Acciones -->
+  <div class="col-md-4">
+    <div class="card shadow-sm sticky-top" style="top: 7rem;">
+      <div class="card-body">
+        <h6 class="card-title text-muted text-uppercase small">Cambiar estado</h6>
+        <div class="d-grid gap-2 mb-3">
+          {% for e in estados %}
+            {% if e.pk != reserva.estado.pk %}
+              <button
+                type="button"
+                class="btn btn-{% if e.color == 'amarillo' %}warning text-dark{% elif e.color == 'rojo' %}danger{% elif e.color == 'verde' %}success{% else %}secondary{% endif %}"
+                data-action="cambiar-estado"
+                data-reserva-id="{{ reserva.pk }}"
+                data-nuevo-estado-id="{{ e.pk }}"
+              >
+                {{ e.nombre }}
+              </button>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <hr>
+
+        <h6 class="card-title text-muted text-uppercase small">Avisar al cliente</h6>
+        <a
+          href="{{ enlace_whatsapp }}"
+          target="_blank"
+          class="btn btn-success w-100 mb-2"
+        >
+          <i class="bi bi-whatsapp"></i>
+          {% if reserva.telefono_cliente %}WhatsApp a {{ reserva.nombre_cliente }}{% else %}Sin teléfono{% endif %}
+        </a>
+
+        {% if reserva.punto_recogida and reserva.punto_recogida.enlace_maps %}
+        <a
+          href="{{ reserva.punto_recogida.enlace_maps }}"
+          target="_blank"
+          class="btn btn-outline-primary w-100 mb-2"
+        >
+          <i class="bi bi-geo-alt"></i> Ver punto en mapa
+        </a>
+        {% endif %}
+
+        <a href="{% url 'calendario' %}" class="btn btn-outline-secondary w-100">
+          <i class="bi bi-calendar"></i> Abrir Google Calendar
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Cambiar estado
+    document.querySelectorAll("[data-action=cambiar-estado]").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const reservaId = this.dataset.reservaId;
+        const nuevoEstadoId = this.dataset.nuevoEstadoId;
+        cambiarEstadoReserva(reservaId, nuevoEstadoId, this);
+      });
+    });
+
+    // Interpretar con IA
+    const btnInterpretarIA = document.getElementById("btnInterpretarIA");
+    if (btnInterpretarIA) {
+      btnInterpretarIA.addEventListener("click", async function () {
+        const texto = document.getElementById("textoRespuesta").value.trim();
+        if (!texto) {
+          Swal.fire({icon: "warning", title: "Escribe la respuesta del cliente", timer: 2000});
+          return;
+        }
+
+        const btn = this;
+        const textoOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i>';
+
+        try {
+          const resp = await fetch(`/reserva/{{ reserva.pk }}/interpretar-respuesta/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": window.CSRF_TOKEN || "",
+            },
+            body: JSON.stringify({texto: texto}),
+          });
+          const data = await resp.json();
+
+          if (data.ok) {
+            const interp = data.interpretacion;
+            let html = "<strong>Datos extraídos:</strong><ul class='list-unstyled small'>";
+            if (interp.nacionalidad) html += "<li>Nacionalidad: " + interp.nacionalidad + "</li>";
+            if (interp.edades && interp.edades.length) html += "<li>Edades: " + interp.edades.join(", ") + "</li>";
+            if (interp.telefono) html += "<li>Teléfono: " + interp.telefono + "</li>";
+            if (interp.experiencia) html += "<li>Experiencia: " + interp.experiencia + "</li>";
+            if (interp.quiere_transporte !== null) html += "<li>Transporte: " + (interp.quiere_transporte ? "Sí" : "No") + "</li>";
+            if (interp.direccion_alojamiento) html += "<li>Alojamiento: " + interp.direccion_alojamiento + "</li>";
+            html += "</ul>";
+            html += "<small>Confianza IA: " + (interp.confianza * 100).toFixed(0) + "%</small>";
+            if (data.requiere_revision_manual) {
+              html += "<div class='mt-2 alert alert-warning'><strong>⚠ Revisión manual recomendada</strong> - Lucía debe verificar los datos.</div>";
+            }
+            document.getElementById("iaResultado").innerHTML = html;
+            Swal.fire({icon: "success", title: "IA completada", timer: 2000});
+            setTimeout(() => window.location.reload(), 1500);
+          } else {
+            Swal.fire({icon: "error", title: "Error", text: data.error});
+          }
+        } catch (err) {
+          Swal.fire({icon: "error", title: "Error", text: err.message});
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = textoOriginal;
+        }
+      });
+    }
+
+    // Buscar punto de recogida
+    const btnBuscarPunto = document.getElementById("btnBuscarPunto");
+    if (btnBuscarPunto) {
+      btnBuscarPunto.addEventListener("click", async function () {
+        const direccion = document.getElementById("direccionAlojamiento").value.trim();
+        if (!direccion) {
+          Swal.fire({icon: "warning", title: "Escribe la dirección del alojamiento", timer: 2000});
+          return;
+        }
+
+        const btn = this;
+        const textoOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i>';
+
+        try {
+          const resp = await fetch(`/reserva/{{ reserva.pk }}/buscar-punto/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": window.CSRF_TOKEN || "",
+            },
+            body: JSON.stringify({direccion: direccion}),
+          });
+          const data = await resp.json();
+
+          if (data.ok) {
+            let html = "<strong>Resultado:</strong> " + data.mensaje;
+            if (data.punto_asignado) {
+              html += "<br><a href='" + data.enlace_maps + "' target='_blank' class='btn btn-sm btn-outline-primary mt-2'>Ver en Google Maps</a>";
+            }
+            document.getElementById("mapaResultado").innerHTML = html;
+            Swal.fire({icon: "success", title: "Maps completado", timer: 2000});
+            setTimeout(() => window.location.reload(), 1500);
+          } else {
+            Swal.fire({icon: "error", title: "Error", text: data.error || data.mensaje});
+          }
+        } catch (err) {
+          Swal.fire({icon: "error", title: "Error", text: err.message});
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = textoOriginal;
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

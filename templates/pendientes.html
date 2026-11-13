@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load app_filters %}
+
+{% block title %}Pendientes - El Acebuche{% endblock %}
+
+{% block content %}
+<!-- Avisos urgentes -->
+{% if avisos_urgentes %}
+  <div class="alert alert-warning border-danger" role="alert">
+    <h5><i class="bi bi-exclamation-triangle"></i> Avisos urgentes</h5>
+    <p class="mb-2">Estas reservas necesitan tu atención ahora mismo:</p>
+    <ul class="list-unstyled mb-0">
+      {% for aviso in avisos_urgentes %}
+        <li class="mb-2 d-flex align-items-start">
+          <i class="bi bi-exclamation-circle text-danger mt-1 me-2"></i>
+          <div>
+            <strong>{{ aviso.reserva.nombre_cliente }}</strong>
+            - {{ aviso.reserva.fecha_actividad|date:"d/m" }} {{ aviso.reserva.hora_actividad|time:"H:i" }}
+            <br>
+            <small>{{ aviso.mensaje }}</small>
+            <br>
+            <a href="{{ aviso.url }}" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-arrow-right"></i> {{ aviso.accion }}
+            </a>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2><i class="bi bi-clock-history"></i> Pendientes de atención</h2>
+  <a href="{% url 'reserva_detalle' reservas.first.pk %}" class="btn btn-outline-primary btn-sm" {% if not reservas %}disabled{% endif %}>
+    <i class="bi bi-arrow-right-circle"></i> Primera reserva
+  </a>
+</div>
+
+{% if reservas %}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+    {% for r in reservas %}
+      <div class="col">
+        <div class="card reserva-card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-{% if r.estado.color == 'amarillo' %}warning text-dark{% elif r.estado.color == 'rojo' %}danger{% elif r.estado.color == 'verde' %}success{% else %}secondary{% endif %} fw-bold">
+                {{ r.estado.nombre }}
+              </span>
+              <span class="text-muted small">{{ r.fecha_actividad|date:"d/m" }} {{ r.hora_actividad|time:"H:i" }}</span>
+            </div>
+
+            <div class="mb-1">
+              <div class="fw-bold">{{ r.nombre_cliente }}</div>
+              <div class="text-muted small">{{ r.numero_personas }} persona{% if r.numero_personas != 1 %}s{% endif %}</div>
+            </div>
+
+            <div class="mb-2 text-muted small">
+              <i class="bi bi-platform me-1"></i> {{ r.plataforma.nombre }}
+              {% if r.codigo_reserva %} · {{ r.codigo_reserva }}{% endif %}
+              {% if r.quiere_transporte %} · <i class="bi bi-car"></i> Transporte{% endif %}
+              {% if r.nacionalidad %} · {{ r.nacionalidad }}{% endif %}
+            </div>
+
+            {% if user.perfil.es_administra %}
+              <div class="d-grid gap-2 mt-auto">
+                {% for e in estados %}
+                  {% if e.pk != r.estado.pk %}
+                    <button
+                      type="button"
+                      class="btn btn-outline-{% if e.color == 'amarillo' %}warning text-dark{% elif e.color == 'rojo' %}danger{% elif e.color == 'verde' %}success{% else %}secondary{% endif %} btn-sm btn-accion"
+                      data-action="cambiar-estado"
+                      data-reserva-id="{{ r.pk }}"
+                      data-nuevo-estado-id="{{ e.pk }}"
+                    >
+                      {{ e.nombre }}
+                    </button>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <a href="{% url 'reserva_detalle' r.pk %}" class="btn btn-primary mt-2 w-100">
+              <i class="bi bi-eye"></i> Ver detalle
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-check-circle display-1 text-success"></i>
+    <h3 class="mt-3">No hay pendientes</h3>
+    <p class="text-muted">Todas las reservas están completas o canceladas.</p>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("[data-action=cambiar-estado]").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const reservaId = this.dataset.reservaId;
+        const nuevoEstadoId = this.dataset.nuevoEstadoId;
+        cambiarEstadoReserva(reservaId, nuevoEstadoId, this);
+      });
+    });
+  });
+</script>
+{% endblock %}

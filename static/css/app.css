@@ -1,0 +1,137 @@
+/* Estilos propios de la app El Acebuche */
+
+body {
+  font-size: 0.95rem;
+}
+
+.navbar-brand {
+  font-weight: 700;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.btn {
+  border-radius: 8px;
+}
+
+/* Tarjeta de reserva en pendientes */
+.reserva-card {
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.reserva-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Colores de estado */
+.badge-estado {
+  font-size: 0.85rem;
+  padding: 0.5em 0.8em;
+}
+
+/* Botones de acción rápida */
+.btn-accion {
+  min-width: 110px;
+}
+
+/* Toasts tipo SweetAlert2 */
+.swalsh-toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+}
+
+/* Botones táctiles grandes para móvil (dedos con guantes o sucios) */
+.btn {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.btn-sm {
+  min-height: 40px;
+  min-width: 40px;
+}
+
+/* Tarjetas de reserva en pendientes */
+.reserva-card {
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.reserva-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Colores de estado */
+.badge-estado {
+  font-size: 0.85rem;
+  padding: 0.5em 0.8em;
+}
+
+/* Botones de acción rápida */
+.btn-accion {
+  min-width: 110px;
+}
+
+/* Toasts tipo SweetAlert2 */
+.swalsh-toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+}
+
+/* --------------------------------------------------------------------------
+   Login
+   -------------------------------------------------------------------------- */
+.login-wrapper {
+  min-height: calc(100vh - 260px);
+}
+
+.login-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(120, 194, 173, 0.18);
+  color: #4f9c87;
+  font-size: 1.75rem;
+}
+
+.password-toggle {
+  right: 0.75rem;
+  z-index: 3;
+  min-height: auto !important;
+  min-width: auto !important;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Utilidad para pantallas pequeñas */
+@media (max-width: 576px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .btn-accion {
+    min-width: auto;
+    flex: 1;
+  }
+  /* Letras más grandes para leer con sol en el taller */
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  .card-body {
+    padding: 1rem;
+  }
+  /* Botones de estado en pantalla completa */
+  .btn-accion {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.5rem;
+  }
+}

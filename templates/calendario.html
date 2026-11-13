@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Calendario - El Acebuche{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-calendar"></i> Calendario Google</h2>
+<p class="lead">
+  Los eventos de las reservas se crean automáticamente en el calendario
+  <strong>“Centro Ecuestre el Acebuche”</strong> (cuenta de Lucía).
+</p>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title">Colores de los eventos</h5>
+    <table class="table table-bordered small">
+      <tr><th style="width:30%">Color</th><th>Significado</th></tr>
+      <tr><td><span class="badge bg-warning text-dark">Amarillo</span></td><td>Faltan datos del cliente</td></tr>
+      <tr><td><span class="badge bg-danger">Rojo</span></td><td>Necesita una decisión de Lucía</td></tr>
+      <tr><td><span class="badge bg-success">Verde</span></td><td>Completa</td></tr>
+      <tr><td><span class="badge bg-secondary">Gris</span></td><td>Cancelada</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="text-center mt-4">
+  <a href="https://calendar.google.com" target="_blank" class="btn btn-primary btn-lg">
+    <i class="bi bi-box-arrow-up-right"></i> Abrir Google Calendar
+  </a>
+  <p class="text-muted small mt-2">Se abre en una nueva pestaña.</p>
+</div>
+
+<a href="{% url 'pendientes' %}" class="btn btn-outline-secondary mt-3">
+  <i class="bi bi-arrow-left"></i> Volver a pendientes
+</a>
+{% endblock %}
