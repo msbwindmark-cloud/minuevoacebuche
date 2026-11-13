@@ -438,8 +438,9 @@ def api_puntos_recogida(request):
 # ---------------------------------------------------------------------------
 @login_required
 def procesar_correos_vista(request):
-    if not request.user.is_superuser:
-        return JsonResponse({"error": "Solo el superusuario puede ejecutar esto."}, status=403)
+    perfil = getattr(request.user, "perfil", None)
+    if not (request.user.is_superuser or (perfil and perfil.es_administra)):
+        return JsonResponse({"error": "Solo el superusuario o un administrador puede ejecutar esto."}, status=403)
 
     no_calendar = request.GET.get("no_calendar", "0") == "1"
     no_mover = request.GET.get("no_mover", "0") == "1"

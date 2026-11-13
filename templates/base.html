@@ -48,6 +48,11 @@
             <i class="bi bi-gear"></i> Configuración
           </a>
         {% endif %}
+        {% if user.is_superuser or user.perfil.es_administra %}
+          <button type="button" class="btn btn-warning btn-sm me-2" id="btnProcesarCorreos">
+            <i class="bi bi-envelope-arrow-down"></i> Procesar correos
+          </button>
+        {% endif %}
         <form method="post" action="{% url 'logout' %}" class="d-inline m-0">
           {% csrf_token %}
           <button type="submit" class="btn btn-danger btn-sm">
@@ -86,6 +91,54 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
   <!-- App JS -->
   <script src="{% static 'js/app.js' %}"></script>
+  <script>
+    // Botón "Procesar correos" (solo superusuario): lee IMAP y crea reservas
+    (function () {
+      const btn = document.getElementById("btnProcesarCorreos");
+      if (!btn) return;
+      btn.addEventListener("click", async function () {
+        const confirmado = await Swal.fire({
+          title: "¿Procesar correos ahora?",
+          text: "Se leerán los correos no leídos de info@ y se crearán/actualizarán reservas.",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Sí, procesar",
+          cancelButtonText: "Cancelar",
+        });
+        if (!confirmado.isConfirmed) return;
+
+        const textoOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Procesando...';
+
+        try {
+          const resp = await fetch("/procesar-correos/");
+          const data = await resp.json();
+          if (data.ok) {
+            await Swal.fire({
+              icon: "success",
+              title: "Correos procesados",
+              text: data.mensaje,
+              timer: 2500,
+              timerProgressBar: true,
+            });
+            window.location.reload();
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: data.error || "No se pudieron procesar los correos.",
+            });
+          }
+        } catch (err) {
+          Swal.fire({icon: "error", title: "Error", text: err.message});
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = textoOriginal;
+        }
+      });
+    })();
+  </script>
   {% block extra_js %}{% endblock %}
 
   <script>

@@ -61,17 +61,10 @@ def conectar_imap():
         return None
 
 
-def obtener_correos_no_leidos(mail):
+def obtener_correos_no_leidos(mail, limite=None):
     """
-    Devuelve una lista de diccionarios con los correos no leídos:
-    {
-      'message_id': str,
-      'asunto': str,
-      'remitente': str,
-      'cuerpo': str,      # texto plano
-      'fecha': datetime,
-      'raw_uid': str,
-    }
+    Devuelve una lista de diccionarios con los correos no leídos.
+    Si se indica `limite`, solo se procesan los `limite` correos más recientes.
     """
     carpeta_procesado = getattr(settings, "IMAP_CARPETA_PROCESADO", "Procesado")
 
@@ -82,6 +75,9 @@ def obtener_correos_no_leidos(mail):
         return []
 
     uids = mensajes[0].split()
+    if limite and len(uids) > limite:
+        # Los UIDs vienen ordenados; nos quedamos con los más recientes
+        uids = uids[-limite:]
     correos = []
 
     for uid in uids:

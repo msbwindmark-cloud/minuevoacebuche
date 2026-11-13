@@ -1,5 +1,5 @@
 """
-Comando de gestión: procesar correos de reservas.
+Comando de gestion: procesar correos de reservas.
 
 Lee info@elacebuche.es por IMAP (Hostalia), clasifica cada correo,
 extrae los datos, crea/actualiza reservas en la base de datos y crea
@@ -49,10 +49,10 @@ def _obtener_plataforma(nombre):
 
 
 def _buscar_reserva_por_codigo(texto):
-    """Busca una reserva existente por código en el texto del correo."""
+    """Busca una reserva existente por codigo en el texto del correo."""
     import re
-    # Buscar códigos tipo BR-XXXXXX o SXXXXX
-    m = re.search(r"(?:#BR-|BR-|GYG[-–]\s*)([A-Z0-9]{6,})", texto, re.IGNORECASE)
+    # Buscar codigos tipo BR-XXXXXX o SXXXXX
+    m = re.search(r"(?:#BR-|BR-|GYG[--]\s*)([A-Z0-9]{6,})", texto, re.IGNORECASE)
     if m:
         codigo = m.group(1)
         if codigo.startswith("BR-"):
@@ -78,10 +78,17 @@ class Command(BaseCommand):
             action="store_true",
             help="No mover correos a la carpeta Procesado",
         )
+        parser.add_argument(
+            "--limite",
+            type=int,
+            default=25,
+            help="Maximo de correos no leidos a procesar por ejecucion (por defecto 25)",
+        )
 
     def handle(self, *args, **options):
         no_calendar = options["no_calendar"]
         no_mover = options["no_mover"]
+        limite = options["limite"]
 
         self.stdout.write(self.style.NOTICE("[MAIL] Iniciando procesamiento de correos..."))
 
@@ -90,8 +97,8 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR("No se pudo conectar al servidor IMAP."))
             return
 
-        correos = obtener_correos_no_leidos(mail)
-        self.stdout.write(f"Se encontraron {len(correos)} correo(s) no leído(s).")
+        correos = obtener_correos_no_leidos(mail, limite=limite)
+        self.stdout.write(f"Se encontraron {len(correos)} correo(s) no leido(s).")
 
         procesados = 0
         creados = 0
@@ -117,8 +124,9 @@ class Command(BaseCommand):
                 asunto, remitente, cuerpo
             )
 
+            asunto_seguro = (asunto or "")[:60].encode("ascii", "replace").decode("ascii")
             self.stdout.write(
-                f"  • {asunto[:60]}... → {plataforma_nombre} / {tipo_correo}"
+                f"  * {asunto_seguro}... -> {plataforma_nombre} / {tipo_correo}"
             )
 
             try:
@@ -146,11 +154,11 @@ class Command(BaseCommand):
                             )
 
                     elif tipo_correo == "mensaje_cliente":
-                        # Intentar vincular a reserva existente por código
+                        # Intentar vincular a reserva existente por codigo
                         reserva = _buscar_reserva_por_codigo(asunto + " " + cuerpo)
                         if reserva:
                             actualizados += 1
-                            # Guardar mensaje en conversación
+                            # Guardar mensaje en conversacion
                             conversacion, _ = Conversacion.objects.get_or_create(
                                 reserva=reserva,
                                 defaults={"asunto": asunto},
@@ -181,18 +189,19 @@ class Command(BaseCommand):
 
                     elif tipo_correo == "cancelacion_cambio":
                         self.stdout.write(
-                            self.style.WARNING(f"    Cancelación/cambio detectado: {asunto[:50]}")
+                            self.style.WARNING(f"    Cancelacion/cambio detectado: {asunto[:50].encode('ascii', 'replace').decode('ascii')}")
                         )
                         omitidos += 1
-                        # Aquí se podría buscar la reserva y cambiar su estado a cancelada
+                        # Aqui se podria buscar la reserva y cambiar su estado a cancelada
 
                     else:
                         # Consulta web, correo directo u otro
                         omitidos += 1
 
             except Exception as exc:
-                logger.error(f"Error procesando correo {message_id}: {exc}")
-                self.stderr.write(self.style.ERROR(f"  [X] Error: {exc}"))
+                exc_seguro = str(exc).encode("ascii", "replace").decode("ascii")
+                logger.error(f"Error procesando correo {message_id}: {exc_seguro}")
+                self.stderr.write(self.style.ERROR(f"  [X] Error: {exc_seguro}"))
                 continue
 
             # Mover a Procesado
@@ -270,7 +279,7 @@ class Command(BaseCommand):
             fecha_procesado=timezone.now(),
         )
 
-        # Crear conversación vacía para ir guardando mensajes
+        # Crear conversacion vacia para ir guardando mensajes
         Conversacion.objects.create(
             reserva=reserva,
             asunto=correo["asunto"],
