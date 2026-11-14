@@ -1,0 +1,19 @@
+# ============================================================================
+# DEPENDENCIAS OPCIONALES (instalar solo cuando tengas las credenciales reales)
+# ============================================================================
+# Uso: pip install -r requirements-opcional.txt
+#
+# Solo instala lo que necesites. La app funciona en modo demo sin estas.
+
+# Google Calendar API (OAuth 2.0)
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Google Maps (geocodificación y distancia a pie)
+requests
+
+# Inteligencia artificial (elige el proveedor que uses)
+anthropic
+openai
