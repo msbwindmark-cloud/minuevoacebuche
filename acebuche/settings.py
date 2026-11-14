@@ -44,7 +44,7 @@ _load_env()
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-key-cambiar-en-produccion")
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get(
-    "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1"
+    "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,minuevoacebuche.pythonanywhere.com"
 ).split(",") if h.strip()]
 
 # ---------------------------------------------------------------------------
