@@ -4,11 +4,18 @@ whitenoise
 # Para leer correos por IMAP (Hostalia)
 imapclient
 
-# Para Google Calendar API (opcional, instalar en producción)
-# google-auth
-# google-auth-oauthlib
-# google-auth-httplib2
-# google-api-python-client
+# Para Google Calendar API (producción)
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Para Google Maps (geocodificación y distancia a pie)
+requests
+
+# Para IA (según el proveedor elegido: Claude o OpenAI)
+anthropic
+openai
 
 # Para exportar a PDF (guía para Lucía)
 reportlab
@@ -16,5 +23,5 @@ reportlab
 # Para exportar a Excel (comando exportar_excel)
 openpyxl
 
-# Para variables de entorno .env (opcional)
+# Para variables de entorno .env (opcional, la app tiene cargador propio)
 # python-dotenv
