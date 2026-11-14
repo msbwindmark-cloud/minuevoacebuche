@@ -24,7 +24,10 @@ def _clave_ia_valida():
     from core.models import Configuracion
 
     config = Configuracion.get()
-    api_key = (config.ia_api_key or getattr(settings, "IA_API_KEY", "")).strip()
+    if config.usar_credenciales_panel:
+        api_key = (config.ia_api_key or "").strip()
+    else:
+        api_key = (getattr(settings, "IA_API_KEY", "") or "").strip()
     if not api_key:
         return False
     return not api_key.upper().startswith("API_KEY_")
@@ -178,10 +181,16 @@ def interpretar_respuesta_cliente(texto, idioma_origen="en"):
     from core.models import Configuracion
 
     config = Configuracion.get()
-    api_key = (config.ia_api_key or getattr(settings, "IA_API_KEY", "")).strip()
-    proveedor = (config.ia_proveedor or getattr(settings, "IA_PROVEEDOR", "claude")).strip()
+    usar_panel = config.usar_credenciales_panel
 
-    modo_demo_activo = getattr(settings, "MODO_DEMO", False) or config.modo_demo
+    if usar_panel:
+        api_key = (config.ia_api_key or "").strip()
+        proveedor = (config.ia_proveedor or "claude").strip()
+        modo_demo_activo = config.modo_demo
+    else:
+        api_key = (getattr(settings, "IA_API_KEY", "") or "").strip()
+        proveedor = (getattr(settings, "IA_PROVEEDOR", "claude") or "claude").strip()
+        modo_demo_activo = getattr(settings, "MODO_DEMO", False)
 
     if not _clave_ia_valida():
         if modo_demo_activo:

@@ -141,6 +141,11 @@ class Configuracion(models.Model):
     ia_api_key = models.CharField("IA API Key", max_length=200, blank=True)
 
     # --- Otros ---
+    usar_credenciales_panel = models.BooleanField(
+        "usar credenciales del panel (modo Lucía)", default=False,
+        help_text="Desactivado: usa las credenciales del archivo .env (desarrollador). "
+                  "Activado: usa las credenciales introducidas aquí (Lucía).",
+    )
     modo_demo = models.BooleanField("modo demo (simular IA/Maps)", default=True)
     precio_transporte = models.DecimalField("precio transporte", max_digits=8, decimal_places=2, default=60)
     aviso_reserva_proxima_dias = models.PositiveIntegerField("días aviso urgente", default=1)

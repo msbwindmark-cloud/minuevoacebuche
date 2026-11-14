@@ -30,6 +30,20 @@
 <form method="post" action="{% url 'configuracion_avanzada' %}">
   {% csrf_token %}
 
+  <div class="alert alert-warning" role="alert">
+    <div class="form-check form-switch">
+      {{ form.usar_credenciales_panel }}
+      <label class="form-check-label fw-bold" for="{{ form.usar_credenciales_panel.id_for_label }}">
+        Usar credenciales del panel (modo Lucía)
+      </label>
+    </div>
+    <p class="small mb-0 mt-1">
+      <strong>Desactivado</strong>: la app usa las credenciales del archivo <code>.env</code> (modo desarrollador).<br>
+      <strong>Activado</strong>: la app usa las credenciales introducidas aquí (Lucía).<br>
+      <em>En producción (PythonAnywhere), deja esto activado y rellena los campos de abajo.</em>
+    </p>
+  </div>
+
   <!-- Correo -->
   <div class="card shadow-sm mb-3">
     <div class="card-body">
@@ -102,6 +116,17 @@
   <div class="card shadow-sm mb-3">
     <div class="card-body">
       <h5 class="card-title"><i class="bi bi-calendar"></i> Google Calendar</h5>
+      <div class="alert alert-info small mb-2" role="alert">
+        <strong>¿Qué es esto?</strong> Google Calendar usa OAuth 2.0. Necesitas:
+        <ol class="mb-1 mt-1">
+          <li>Crear un proyecto en <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a>.</li>
+          <li>Activar la API de Google Calendar.</li>
+          <li>Crear credenciales OAuth 2.0 (tipo "Aplicación web") y copiar aquí el <strong>Client ID</strong> y <strong>Client Secret</strong>.</li>
+          <li>Poner la <strong>Redirect URI</strong> como: <code>https://tu-dominio.pythonanywhere.com/calendar/oauth2callback/</code></li>
+          <li>Después de guardar, pulsar <a href="{% url 'calendar_autorizar' %}">"Autorizar Google Calendar"</a> e iniciar sesión con <code>luciagilran2014@gmail.com</code>.</li>
+        </ol>
+        Se generará un archivo <code>google_token.json</code> en el servidor (no hay que tocarlo).
+      </div>
       <div class="row g-2">
         <div class="col-md-6">
           <label class="form-label small">ID del calendario</label>
@@ -131,6 +156,7 @@
   <div class="card shadow-sm mb-3">
     <div class="card-body">
       <h5 class="card-title"><i class="bi bi-geo-alt"></i> Google Maps</h5>
+      <p class="small text-muted mb-1">API Key de Google Maps Platform (Geocoding + Distance Matrix). Se crea en Google Cloud Console → Credenciales → Crear credencial → Clave de API. Restringir por IP del servidor en producción.</p>
       <label class="form-label small">API Key</label>
       {{ form.google_maps_api_key }}
     </div>

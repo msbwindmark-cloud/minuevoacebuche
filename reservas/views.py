@@ -94,7 +94,10 @@ def pendientes(request):
     from core.models import Configuracion
 
     config = Configuracion.get()
-    dias_aviso = int(config.aviso_reserva_proxima_dias or getattr(settings, "AVISO_RESERVA_PROXIMA_DIAS", 1))
+    if config.usar_credenciales_panel:
+        dias_aviso = int(config.aviso_reserva_proxima_dias or 1)
+    else:
+        dias_aviso = int(getattr(settings, "AVISO_RESERVA_PROXIMA_DIAS", 1))
     fecha_limite = hoy + timedelta(days=dias_aviso)
 
     avisos_urgentes = []

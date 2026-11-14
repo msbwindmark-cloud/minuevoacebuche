@@ -43,11 +43,20 @@ def conectar_imap():
     from core.models import Configuracion
 
     config = Configuracion.get()
-    host = config.imap_host or getattr(settings, "IMAP_HOST", "imap.servidor-correo.net")
-    port = config.imap_port or getattr(settings, "IMAP_PORT", 993)
-    user = config.imap_user or getattr(settings, "IMAP_USER", "")
-    password = config.imap_password or getattr(settings, "IMAP_PASSWORD", "")
-    carpeta = config.imap_carpeta_entrada or getattr(settings, "IMAP_CARPETA_ENTRADA", "INBOX")
+    usar_panel = config.usar_credenciales_panel
+
+    if usar_panel:
+        host = config.imap_host or "imap.servidor-correo.net"
+        port = config.imap_port or 993
+        user = config.imap_user or ""
+        password = config.imap_password or ""
+        carpeta = config.imap_carpeta_entrada or "INBOX"
+    else:
+        host = getattr(settings, "IMAP_HOST", "imap.servidor-correo.net")
+        port = getattr(settings, "IMAP_PORT", 993)
+        user = getattr(settings, "IMAP_USER", "")
+        password = getattr(settings, "IMAP_PASSWORD", "")
+        carpeta = getattr(settings, "IMAP_CARPETA_ENTRADA", "INBOX")
 
     if not user or not password:
         logger.warning("IMAP_USER o IMAP_PASSWORD no configurados en .env")
@@ -141,7 +150,10 @@ def mover_a_procesado(mail, raw_uid):
     from core.models import Configuracion
 
     config = Configuracion.get()
-    carpeta_procesado = config.imap_carpeta_procesado or getattr(settings, "IMAP_CARPETA_PROCESADO", "Procesado")
+    if config.usar_credenciales_panel:
+        carpeta_procesado = config.imap_carpeta_procesado or "Procesado"
+    else:
+        carpeta_procesado = getattr(settings, "IMAP_CARPETA_PROCESADO", "Procesado")
 
     try:
         # Copiar a Procesado

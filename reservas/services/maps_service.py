@@ -53,7 +53,10 @@ def _clave_maps_valida():
     from core.models import Configuracion
 
     config = Configuracion.get()
-    api_key = (config.google_maps_api_key or getattr(settings, "GOOGLE_MAPS_API_KEY", "")).strip()
+    if config.usar_credenciales_panel:
+        api_key = (config.google_maps_api_key or "").strip()
+    else:
+        api_key = (getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "").strip()
     if not api_key:
         return False
     return not api_key.upper().startswith("API_KEY_")
@@ -107,9 +110,17 @@ def geocodificar_direccion(direccion):
     from core.models import Configuracion
 
     config = Configuracion.get()
-    api_key = (config.google_maps_api_key or getattr(settings, "GOOGLE_MAPS_API_KEY", "")).strip()
+    usar_panel = config.usar_credenciales_panel
+
+    if usar_panel:
+        api_key = (config.google_maps_api_key or "").strip()
+        modo_demo_activo = config.modo_demo
+    else:
+        api_key = (getattr(settings, "GOOGLE_MAPS_API_KEY", "") or "").strip()
+        modo_demo_activo = getattr(settings, "MODO_DEMO", False)
+
     if not _clave_maps_valida():
-        if (getattr(settings, "MODO_DEMO", False) or config.modo_demo) and direccion:
+        if modo_demo_activo and direccion:
             lat, lon = _geocodificar_demo(direccion)
             logger.info("Geocodificación SIMULADA (modo demo) para: %s", direccion)
             return lat, lon
