@@ -1,27 +1,32 @@
+# ============================================================================
+# REQUISITOS MÍNIMOS (instalar siempre)
+# ============================================================================
 Django>=5.2,<7
 whitenoise
-
-# Para leer correos por IMAP (Hostalia)
-imapclient
-
-# Para Google Calendar API (producción)
-google-auth
-google-auth-oauthlib
-google-auth-httplib2
-google-api-python-client
-
-# Para Google Maps (geocodificación y distancia a pie)
-requests
-
-# Para IA (según el proveedor elegido: Claude o OpenAI)
-anthropic
-openai
 
 # Para exportar a PDF (guía para Lucía)
 reportlab
 
-# Para exportar a Excel (comando exportar_excel)
+# Para exportar a Excel (comando exportar_excel y botón del panel)
 openpyxl
 
-# Para variables de entorno .env (opcional, la app tiene cargador propio)
-# python-dotenv
+# ============================================================================
+# OPCIONALES (solo si vas a usar funciones reales en vez de modo demo)
+# Descomenta o instala por separado cuando tengas las credenciales de Lucía.
+# ============================================================================
+# Para Google Calendar API real (OAuth):
+# google-auth
+# google-auth-oauthlib
+# google-auth-httplib2
+# google-api-python-client
+
+# Para Google Maps real (geocodificación y distancia a pie):
+# requests
+
+# Para IA real (elige el proveedor que uses):
+# anthropic
+# openai
+
+# Para leer correos por IMAP (la app usa imaplib de la librería estándar,
+# así que no es obligatorio instalar nada extra):
+# imapclient

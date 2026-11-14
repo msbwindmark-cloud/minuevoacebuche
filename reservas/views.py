@@ -516,9 +516,15 @@ def exportar_excel_vista(request):
         from openpyxl.styles import Font, Alignment, PatternFill
         from openpyxl.utils import get_column_letter
     except ImportError:
-        return JsonResponse(
-            {"ok": False, "error": "openpyxl no instalado en el servidor."},
-            status=500,
+        from django.http import HttpResponse
+
+        return HttpResponse(
+            "<h3>Exportar a Excel no disponible</h3>"
+            "<p>El paquete <code>openpyxl</code> no está instalado en el servidor. "
+            "Ejecuta <code>pip install openpyxl</code> en la consola de PythonAnywhere.</p>"
+            '<p><a href="/configuracion/">Volver a Configuración</a></p>',
+            content_type="text/html; charset=utf-8",
+            status=503,
         )
 
     from django.db.models import Sum, Count
@@ -708,12 +714,23 @@ def configuracion_avanzada(request):
 @login_required
 def descargar_guia_pdf(request):
     """Genera y descarga un PDF con la guía para Lucía y las instrucciones."""
-    from django.http import HttpResponse
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem
-    from reportlab.lib import colors
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import cm
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem
+        from reportlab.lib import colors
+    except ImportError:
+        from django.http import HttpResponse
+
+        return HttpResponse(
+            "<h3>Descargar guía PDF no disponible</h3>"
+            "<p>El paquete <code>reportlab</code> no está instalado en el servidor. "
+            "Ejecuta <code>pip install reportlab</code> en la consola de PythonAnywhere.</p>"
+            '<p><a href="/configuracion/">Volver a Configuración</a></p>',
+            content_type="text/html; charset=utf-8",
+            status=503,
+        )
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm,
