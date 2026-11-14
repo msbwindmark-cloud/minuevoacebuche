@@ -7,7 +7,7 @@
 <p class="text-muted">Aquí se gestionan los datos maestros de la app: puntos de recogida, estados y plataformas.</p>
 
 <p>
-  <a href="{% url 'configuracion_avanzada' %}" class="btn btn-outline-primary btn-sm">
+  <a href="/configuracion/avanzada/" class="btn btn-outline-primary btn-sm">
     <i class="bi bi-shield-lock"></i> Credenciales privadas (correo, Google, Maps, IA)
   </a>
   <span class="text-muted small ms-2">Incluye guía paso a paso para Lucía</span>
@@ -150,7 +150,7 @@
   <div class="card-body">
     <h5 class="card-title"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel (cuentas de turismo)</h5>
     <p class="text-muted small">Genera un Excel con 3 hojas: reservas del mes, resumen por plataforma y resumen mensual.</p>
-    <form method="get" action="{% url 'exportar_excel_vista' %}" class="row g-2 align-items-end">
+    <form method="get" action="/exportar-excel/" class="row g-2 align-items-end">
       <div class="col-auto">
         <label class="form-label small">Mes</label>
         <select name="mes" class="form-select form-select-sm">

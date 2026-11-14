@@ -61,7 +61,7 @@
           </button>
         {% endif %}
         {% if user.is_superuser or user.perfil.es_administra %}
-        <a href="{% url 'configuracion_avanzada' %}" class="btn btn-info btn-sm me-2" title="Ayuda y guía para Lucía">
+        <a href="/configuracion/avanzada/" class="btn btn-info btn-sm me-2" title="Ayuda y guía para Lucía">
           <i class="bi bi-question-circle"></i> Ayuda
         </a>
         {% endif %}
