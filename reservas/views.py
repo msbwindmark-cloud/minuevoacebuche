@@ -47,7 +47,11 @@ def administra_required(view_func):
     def _wrapped(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect("login")
-        perfil = getattr(request.user, "perfil", None)
+        perfil = None
+        try:
+            perfil = request.user.perfil
+        except Exception:
+            perfil = None
         if not perfil or not perfil.es_administra:
             return HttpResponseForbidden("No tienes permiso para esta acción.")
         return view_func(request, *args, **kwargs)
@@ -446,38 +450,6 @@ def marcar_consulta_respondida(request, pk):
     consulta.respondida = True
     consulta.save(update_fields=["respondida"])
     return redirect("pendientes")
-    """
-    Permite a Lucía introducir sus credenciales privadas (correo, Google,
-    Maps, IA) desde el panel, sin editar el .env ni compartirlas.
-    """
-    from core.models import Configuracion
-
-    config = Configuracion.get()
-
-    if request.method == "POST":
-        form = ConfiguracionForm(request.POST, instance=config)
-        if form.is_valid():
-            form.save()
-            messages.success(
-                request,
-                "Credenciales guardadas. La app las usará a partir de ahora.",
-            )
-            registrar_log(
-                usuario=request.user,
-                accion=LogApp.ACCION_EDITAR,
-                modelo="Configuracion",
-                id_objeto=1,
-                detalle="Configuración avanzada actualizada desde el panel.",
-                request=request,
-            )
-            return redirect("configuracion_avanzada")
-    else:
-        form = ConfiguracionForm(instance=config)
-
-    return render(request, "configuracion_avanzada.html", {
-        "form": form,
-        "config": config,
-    })
 
 
 # ---------------------------------------------------------------------------
@@ -699,7 +671,13 @@ def configuracion_avanzada(request):
     config = Configuracion.get()
 
     if request.method == "POST":
-        form = ConfiguracionForm(request.POST, instance=config)
+        # Solo el superusuario puede cambiar el interruptor "Modo Lucía"
+        if not request.user.is_superuser and "usar_credenciales_panel" in request.POST:
+            post_data = request.POST.copy()
+            post_data.pop("usar_credenciales_panel", None)
+            form = ConfiguracionForm(post_data, instance=config)
+        else:
+            form = ConfiguracionForm(request.POST, instance=config)
         if form.is_valid():
             form.save()
             messages.success(
@@ -722,3 +700,119 @@ def configuracion_avanzada(request):
         "form": form,
         "config": config,
     })
+
+
+# ---------------------------------------------------------------------------
+# Descargar guía para Lucía en PDF
+# ---------------------------------------------------------------------------
+@login_required
+def descargar_guia_pdf(request):
+    """Genera y descarga un PDF con la guía para Lucía y las instrucciones."""
+    from django.http import HttpResponse
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem
+    from reportlab.lib import colors
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm,
+                           topMargin=2 * cm, bottomMargin=2 * cm)
+    styles = getSampleStyleSheet()
+    titulo = ParagraphStyle("titulo", parent=styles["Title"], fontSize=18, spaceAfter=12,
+                            textColor=colors.HexColor("#1F4E79"))
+    h2 = ParagraphStyle("h2", parent=styles["Heading2"], fontSize=13, spaceBefore=12,
+                        spaceAfter=6, textColor=colors.HexColor("#1F4E79"))
+    normal = ParagraphStyle("normal", parent=styles["Normal"], fontSize=10.5, spaceAfter=6,
+                            leading=14)
+    bullet = ParagraphStyle("bullet", parent=normal, leftIndent=18, bulletIndent=8)
+
+    story = []
+    story.append(Paragraph("Centro Ecuestre El Acebuche", titulo))
+    story.append(Paragraph("Guía para Lucía — cómo usar la app de reservas", h2))
+    story.append(Paragraph(
+        "Esta guía explica paso a paso cómo introducir tus claves privadas en la app "
+        "y cómo usar el resto de funciones. No hace falta saber de informática.", normal))
+    story.append(Spacer(1, 0.3 * cm))
+
+    story.append(Paragraph("Paso 1 — Correo de Hostalia (info@elacebuche.es)", h2))
+    story.append(Paragraph("Rellena estos campos en Configuración → Credenciales privadas:", normal))
+    for t in [
+        "Host SMTP: déjalo como está (imap.servidor-correo.net).",
+        "Puerto: 587.",
+        "Usar TLS: marcado.",
+        "Usuario: info@elacebuche.es.",
+        "Contraseña del correo: la contraseña de tu correo de Hostalia.",
+        "Correo remitente: info@elacebuche.es.",
+        "Host IMAP, puerto 993, carpeta entrada INBOX, carpeta procesado Procesado: déjalos como están.",
+    ]:
+        story.append(Paragraph("• " + t, bullet))
+
+    story.append(Paragraph("Paso 2 — Google Calendar (para crear eventos automáticamente)", h2))
+    story.append(Paragraph("Necesitas crear unas credenciales en Google. Tu compañero puede ayudarte:", normal))
+    for t in [
+        "Entra a console.cloud.google.com con tu cuenta luciagilran2014@gmail.com.",
+        "Crea un proyecto (ponle de nombre 'El Acebuche').",
+        "Busca 'Google Calendar API' y actívala.",
+        "Ve a Credenciales → Crear credenciales → ID de cliente OAuth 2.0 (tipo 'Aplicación web').",
+        "En 'URIs de redirección autorizados' pon: https://tu-dominio.pythonanywhere.com/calendar/oauth2callback/",
+        "Copia el Client ID y el Client Secret y pégalos en el panel de la app.",
+        "Guarda el formulario.",
+        "Pulsa el enlace 'Autorizar Google Calendar' e inicia sesión con luciagilran2014@gmail.com.",
+    ]:
+        story.append(Paragraph("• " + t, bullet))
+    story.append(Paragraph(
+        "Listo. Se genera un archivo automático en el servidor (google_token.json). "
+        "No tienes que subir nada ni tocar ningún archivo .json.", normal))
+
+    story.append(Paragraph("Paso 3 — Google Maps (para calcular puntos de recogida)", h2))
+    for t in [
+        "En la misma consola de Google Cloud, ve a Credenciales → Crear credencial → Clave de API.",
+        "Copia la clave y pégala en el campo 'Google Maps API Key'.",
+        "(Opcional) Restringe la clave por la IP del servidor para más seguridad.",
+    ]:
+        story.append(Paragraph("• " + t, bullet))
+    story.append(Paragraph("No necesita archivos ni autorizaciones. Solo la clave.", normal))
+
+    story.append(Paragraph("Paso 4 — Inteligencia artificial (para leer respuestas de clientes)", h2))
+    for t in [
+        "Claude (Anthropic): entra a console.anthropic.com → crea una API Key.",
+        "OpenAI: entra a platform.openai.com → crea una API Key.",
+        "Pon el proveedor (claude u openai) y la clave en los campos correspondientes.",
+    ]:
+        story.append(Paragraph("• " + t, bullet))
+
+    story.append(Paragraph("Paso 5 — Activar el modo real (desactivar demo)", h2))
+    for t in [
+        "Cuando hayas introducido todas las claves, desactiva 'Modo demo (simular IA/Maps)'.",
+        "Asegúrate de que 'Usar credenciales del panel (modo Lucía)' esté activado.",
+        "Pulsa 'Guardar credenciales'.",
+    ]:
+        story.append(Paragraph("• " + t, bullet))
+    story.append(Paragraph(
+        "¡Listo! A partir de ahora la app usa tus claves reales. "
+        "Si algo falla, vuelve a activar el modo demo y avisa a tu compañero.", normal))
+
+    story.append(Paragraph("Respuesta a tus dudas frecuentes", h2))
+    story.append(Paragraph("¿Qué es el 'client_id'?", normal))
+    story.append(Paragraph(
+        "Es un código largo (ejemplo: 123456-abc...apps.googleusercontent.com) que Google te da "
+        "al crear las credenciales OAuth. Lo copias y lo pegas en el campo 'Google Client ID' del panel.", normal))
+    story.append(Paragraph("¿Y el archivo .json?", normal))
+    story.append(Paragraph(
+        "Probablemente es el archivo client_secrets.json que Google te ofrece para descargar. "
+        "NO tienes que subirlo ni tocarlo. Solo copia el client_id y el client_secret de ese archivo "
+        "(o de la pantalla de Google Cloud Console) y pégalos en los campos del panel. "
+        "El archivo google_token.json se genera automáticamente cuando pulsas 'Autorizar Google Calendar'.", normal))
+
+    story.append(Paragraph("Consejo final", h2))
+    story.append(Paragraph(
+        "Si no tienes alguna clave todavía, déjala vacía. La app seguirá funcionando en modo demo "
+        "para esa función (sin romperse). Rellénala cuando la tengas.", normal))
+
+    doc.build(story)
+    buffer.seek(0)
+
+    response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    response["Content-Disposition"] = 'attachment; filename="guia_lucia_el_acebuche.pdf"'
+    return response

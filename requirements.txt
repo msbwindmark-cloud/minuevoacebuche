@@ -10,6 +10,9 @@ imapclient
 # google-auth-httplib2
 # google-api-python-client
 
+# Para exportar a PDF (guía para Lucía)
+reportlab
+
 # Para exportar a Excel (comando exportar_excel)
 openpyxl
 

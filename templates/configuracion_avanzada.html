@@ -5,6 +5,136 @@
 
 {% block content %}
 <h2><i class="bi bi-shield-lock"></i> Configuración avanzada (credenciales)</h2>
+
+<!-- Guía para Lucía -->
+<div class="card shadow-sm border-primary mb-4">
+  <div class="card-body">
+    <h5 class="card-title text-primary">
+      <i class="bi bi-book"></i> Guía para Lucía — cómo rellenar este formulario
+    </h5>
+    <p class="text-muted small mb-3">
+      No hace falta saber de informática. Sigue estos pasos en orden. Si tienes dudas, llama a tu compañero.
+    </p>
+
+    <p class="mb-3">
+      <a href="{% url 'descargar_guia_pdf' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-file-earmark-pdf"></i> Descargar esta guía en PDF
+      </a>
+    </p>
+
+    <div class="accordion" id="guiaLucia">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#paso1">
+            Paso 1 — Correo de Hostalia (info@elacebuche.es)
+          </button>
+        </h2>
+        <div id="paso1" class="accordion-collapse collapse show" data-bs-parent="#guiaLucia">
+          <div class="accordion-body small">
+            <ul>
+              <li><strong>Host SMTP:</strong> déjalo como está (<code>imap.servidor-correo.net</code>).</li>
+              <li><strong>Puerto:</strong> 587.</li>
+              <li><strong>Usar TLS:</strong> marcado.</li>
+              <li><strong>Usuario:</strong> <code>info@elacebuche.es</code>.</li>
+              <li><strong>Contraseña del correo:</strong> la contraseña de tu correo de Hostalia (la que usas para entrar al webmail).</li>
+              <li><strong>Correo remitente:</strong> <code>info@elacebuche.es</code>.</li>
+            </ul>
+            <p class="mb-0"><em>Host IMAP, puerto 993, carpeta entrada "INBOX", carpeta procesado "Procesado": déjalos como están.</em></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paso2">
+            Paso 2 — Google Calendar (para crear eventos automáticamente)
+          </button>
+        </h2>
+        <div id="paso2" class="accordion-collapse collapse" data-bs-parent="#guiaLucia">
+          <div class="accordion-body small">
+            <p>Necesitas crear unas credenciales en Google. Tu compañero puede hacerlo contigo o te las da ya hechas:</p>
+            <ol>
+              <li>Entra a <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> con tu cuenta <code>luciagilran2014@gmail.com</code>.</li>
+              <li>Crea un proyecto (ponle de nombre "El Acebuche").</li>
+              <li>Busca "Google Calendar API" y actívala.</li>
+              <li>Ve a <strong>Credenciales → Crear credenciales → ID de cliente OAuth 2.0</strong> (tipo "Aplicación web").</li>
+              <li>En "URIs de redirección autorizados" pon: <code>https://tu-dominio.pythonanywhere.com/calendar/oauth2callback/</code></li>
+              <li>Copia el <strong>Client ID</strong> y el <strong>Client Secret</strong> y pégalos aquí.</li>
+              <li>Guarda el formulario.</li>
+              <li>Pulsa el enlace <a href="{% url 'calendar_autorizar' %}">"Autorizar Google Calendar"</a> e inicia sesión con <code>luciagilran2014@gmail.com</code>.</li>
+            </ol>
+            <p class="mb-0 text-success"><strong>Listo.</strong> Se genera un archivo automático en el servidor. No tienes que subir nada.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paso3">
+            Paso 3 — Google Maps (para calcular puntos de recogida)
+          </button>
+        </h2>
+        <div id="paso3" class="accordion-collapse collapse" data-bs-parent="#guiaLucia">
+          <div class="accordion-body small">
+            <ol>
+              <li>En la misma consola de Google Cloud, ve a <strong>Credenciales → Crear credencial → Clave de API</strong>.</li>
+              <li>Copia la clave y pégala en el campo "Google Maps API Key".</li>
+              <li>(Opcional) Restringe la clave por la IP del servidor para más seguridad.</li>
+            </ol>
+            <p class="mb-0">No necesita archivos ni autorizaciones. Solo la clave.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paso4">
+            Paso 4 — Inteligencia artificial (para leer respuestas de clientes)
+          </button>
+        </h2>
+        <div id="paso4" class="accordion-collapse collapse" data-bs-parent="#guiaLucia">
+          <div class="accordion-body small">
+            <p>Elige un proveedor y pega la clave:</p>
+            <ul>
+              <li><strong>Claude (Anthropic):</strong> entra a <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → crea una API Key.</li>
+              <li><strong>OpenAI:</strong> entra a <a href="https://platform.openai.com" target="_blank">platform.openai.com</a> → crea una API Key.</li>
+            </ul>
+            <p class="mb-0">Pon el proveedor (<code>claude</code> u <code>openai</code>) y la clave en los campos correspondientes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paso5">
+            Paso 5 — Activar el modo real (desactivar demo)
+          </button>
+        </h2>
+        <div id="paso5" class="accordion-collapse collapse" data-bs-parent="#guiaLucia">
+          <div class="accordion-body small">
+            <p>Cuando hayas introducido <strong>todas</strong> las claves:</p>
+            <ol>
+              <li>Desactiva el interruptor <strong>"Modo demo (simular IA/Maps)"</strong>.</li>
+              <li>Asegúrate de que el interruptor <strong>"Usar credenciales del panel (modo Lucía)"</strong> esté activado.</li>
+              <li>Pulsa <strong>"Guardar credenciales"</strong>.</li>
+            </ol>
+            <p class="mb-0 text-success">
+              <strong>¡Listo!</strong> A partir de ahora la app usa tus claves reales.
+              Si algo falla, vuelve a activar el modo demo y avisa a tu compañero.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-info small mt-3 mb-0" role="alert">
+      <i class="bi bi-lightbulb me-1"></i>
+      <strong>Consejo:</strong> si no tienes alguna clave todavía, déjala vacía.
+      La app seguirá funcionando en modo demo para esa función (sin romperse).
+      Rellénala cuando la tengas.
+    </div>
+  </div>
+</div>
 <p class="text-muted">
   Aquí Lucía puede introducir sus claves privadas (correo, Google, Maps, IA)
   directamente, sin editar archivos ni compartirlas con nadie.
@@ -31,6 +161,7 @@
   {% csrf_token %}
 
   <div class="alert alert-warning" role="alert">
+    {% if user.is_superuser %}
     <div class="form-check form-switch">
       {{ form.usar_credenciales_panel }}
       <label class="form-check-label fw-bold" for="{{ form.usar_credenciales_panel.id_for_label }}">
@@ -42,6 +173,13 @@
       <strong>Activado</strong>: la app usa las credenciales introducidas aquí (Lucía).<br>
       <em>En producción (PythonAnywhere), deja esto activado y rellena los campos de abajo.</em>
     </p>
+    {% else %}
+    <p class="small mb-0">
+      <i class="bi bi-info-circle me-1"></i>
+      Aquí puedes introducir tus claves privadas. El modo de uso (desarrollador/Lucía)
+      lo gestiona el administrador del sistema.
+    </p>
+    {% endif %}
   </div>
 
   <!-- Correo -->

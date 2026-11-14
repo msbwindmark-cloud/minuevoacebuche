@@ -63,8 +63,8 @@ urlpatterns = [
         name="calendar_oauth2callback",
     ),
 
-    # Exportar a Excel desde el panel
-    path("exportar-excel/", views.exportar_excel_vista, name="exportar_excel_vista"),
+    # Descargar guía para Lucía en PDF
+    path("descargar-guia-pdf/", views.descargar_guia_pdf, name="descargar_guia_pdf"),
 
     # Ejecutar procesamiento de correos desde web (solo administra)
     path(

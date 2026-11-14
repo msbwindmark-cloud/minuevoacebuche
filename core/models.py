@@ -99,9 +99,16 @@ def registrar_log(usuario, accion, modelo="", id_objeto=None, detalle="", reques
     )
 
 
-# ---------------------------------------------------------------------------
-# Configuración global de la app (singleton)
-# ---------------------------------------------------------------------------
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+@receiver(post_save, sender=User)
+def crear_perfil_usuario(sender, instance, created, **kwargs):
+    """Crea automáticamente un Perfil al crear un User (rol admin si es superuser)."""
+    if created:
+        rol = Perfil.ROL_ADMIN if instance.is_superuser else Perfil.ROL_CONSULTA
+        Perfil.objects.get_or_create(user=instance, defaults={"rol": rol})
 class Configuracion(models.Model):
     """
     Configuración global de la app (singleton).
