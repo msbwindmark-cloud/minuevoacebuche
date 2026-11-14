@@ -31,3 +31,11 @@ staticfiles/
 # Sistema operativo
 Thumbs.db
 .DS_Store
+
+
+.env
+
+.env.example
+
+README_LUCIA.md
+
