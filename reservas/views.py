@@ -498,6 +498,7 @@ def exportar_excel_vista(request):
     Genera y descarga un Excel con las reservas del mes indicado.
     Parámetros GET: mes (1-12), anio (ej. 2026).
     """
+    from django.http import HttpResponse
     try:
         mes = int(request.GET.get("mes", ""))
         anio = int(request.GET.get("anio", ""))
@@ -516,8 +517,6 @@ def exportar_excel_vista(request):
         from openpyxl.styles import Font, Alignment, PatternFill
         from openpyxl.utils import get_column_letter
     except ImportError:
-        from django.http import HttpResponse
-
         return HttpResponse(
             "<h3>Exportar a Excel no disponible</h3>"
             "<p>El paquete <code>openpyxl</code> no está instalado en el servidor. "
@@ -528,7 +527,6 @@ def exportar_excel_vista(request):
         )
 
     from django.db.models import Sum, Count
-    from django.http import HttpResponse
 
     from reservas.models import Reserva
 
@@ -714,6 +712,7 @@ def configuracion_avanzada(request):
 @login_required
 def descargar_guia_pdf(request):
     """Genera y descarga un PDF con la guía para Lucía y las instrucciones."""
+    from django.http import HttpResponse
     try:
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -721,8 +720,6 @@ def descargar_guia_pdf(request):
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem
         from reportlab.lib import colors
     except ImportError:
-        from django.http import HttpResponse
-
         return HttpResponse(
             "<h3>Descargar guía PDF no disponible</h3>"
             "<p>El paquete <code>reportlab</code> no está instalado en el servidor. "
