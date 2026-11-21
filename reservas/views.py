@@ -683,6 +683,9 @@ def configuracion_avanzada(request):
         else:
             form = ConfiguracionForm(request.POST, instance=config)
         if form.is_valid():
+            # Al activar "Modo Lucía", se desactiva automáticamente el "Modo demo"
+            # (y viceversa): si usas credenciales reales, no se simula.
+            form.instance.modo_demo = not bool(form.cleaned_data.get("usar_credenciales_panel", False))
             form.save()
             messages.success(
                 request,

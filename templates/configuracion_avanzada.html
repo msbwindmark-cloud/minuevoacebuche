@@ -369,6 +369,19 @@
   </div>
 </form>
 
+{% block extra_js %}
+<script>
+  (function () {
+    const toggleLucia = document.getElementById('{{ form.usar_credenciales_panel.id_for_label }}');
+    const toggleDemo = document.getElementById('{{ form.modo_demo.id_for_label }}');
+    if (!toggleLucia || !toggleDemo) return;
+    toggleLucia.addEventListener('change', function () {
+      toggleDemo.checked = !this.checked;
+    });
+  })();
+</script>
+{% endblock %}
+
 <a href="{% url 'pendientes' %}" class="btn btn-outline-secondary mt-3">
   <i class="bi bi-arrow-left"></i> Volver a pendientes
 </a>
